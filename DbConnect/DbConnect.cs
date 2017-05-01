@@ -39,20 +39,36 @@ namespace Cinch
                 _connStr = value;
             }
         }
-
-        public DbConnect(string query, CommandType commType)
+        
+        #region Constructors        
+        /// <summary>
+        /// Intended to be used for Bulk Commands
+        /// </summary>
+        /// <param name="connStr"></param>
+        public DbConnect(string connStr = null)
         {
+            if (!string.IsNullOrWhiteSpace(connStr))
+            {
+                _connStr = connStr;
+            }
+
+            SetSqlConnection(ConnStr);
+
+        }
+
+        public DbConnect(string query, CommandType commType, string connStr = null)
+        {
+            if (!string.IsNullOrWhiteSpace(connStr))
+            {
+                _connStr = connStr;
+            }
+
             SetSqlConnection(ConnStr);
             SetSqlCommand(query, commType);
         }
+        #endregion
 
-        public DbConnect(string connStr, string query, CommandType commType)
-        {
-            ConnStr = connStr;
-            SetSqlConnection(ConnStr);
-            SetSqlCommand(query, commType);
-        }
-
+        #region Query Execution
         /// <summary>
         /// Fills a SQLDataReader with query results
         /// </summary>
@@ -179,11 +195,8 @@ namespace Cinch
 
             try
             {
-
-                //verbose output
-                //VerboseOutput();
-
                 Open();
+
                 // run the query
                 await cmd.ExecuteNonQueryAsync();
 
@@ -262,6 +275,52 @@ namespace Cinch
 
 
         }
+        #endregion
+
+        #region Bulk Copy
+        public async Task ExecuteBulkCopy(string destTableName, IDataReader reader, string destConnStr = null, IEnumerable<SqlBulkCopyColumnMapping> mappings = null)
+        {
+            string destinationConnectionString = destConnStr ?? ConnStr;
+
+            try
+            {
+                Open();
+
+                using (var bulk = new SqlBulkCopy(destinationConnectionString))
+                {
+                    bulk.DestinationTableName = destTableName;
+
+                    //mappings
+                    if (mappings != null)
+                    {
+                        Parallel.ForEach(mappings, (mapping) =>
+                        {
+                            bulk.ColumnMappings.Add(mapping);
+                        });
+                    }
+                    
+                    await bulk.WriteToServerAsync(reader);
+                }
+            }
+            catch (SqlException sqlEx)
+            {
+                if (sqlEx.Number == 50000)
+                {
+                    DbConnectException dbx = new DbConnectException(sqlEx.Message, sqlEx);
+                    throw dbx;
+                }
+                else
+                {
+                    throw sqlEx;
+                }
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+        #endregion
 
         #region SqlDataReader Utils
         private T ConvertReaderToObject<T>(SqlDataReader rd)
