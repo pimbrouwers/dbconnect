@@ -96,11 +96,10 @@ namespace Cinch
             }
             catch (Exception)
             {
-
                 throw;
             }
         }
-
+        
         /// <summary>
         /// Returns a list of objects of the given Type, with propeties set based on how they match up to the fields returned in the recordset.
         /// </summary>
@@ -110,14 +109,14 @@ namespace Cinch
         {
             try
             {
+                dr = await FillSqlDataReader();
 
-                SqlDataReader rd = await FillSqlDataReader();
                 List<T> lst = new List<T>();
-                while (rd.Read())
+
+                while (dr.Read())
                 {
-                    lst.Add(ConvertReaderToObject<T>(rd));
+                    lst.Add(ConvertReaderToObject<T>(dr));
                 }
-                rd.Close();
 
                 return lst;
             }
@@ -135,14 +134,9 @@ namespace Cinch
             }
             catch (Exception)
             {
-
                 throw;
             }
-            finally
-            {
-                Close();
-            }
-
+            
         }
 
         /// <summary>
@@ -154,13 +148,13 @@ namespace Cinch
         {
             try
             {
-                SqlDataReader rd = await FillSqlDataReader();
+                dr = await FillSqlDataReader();
+
                 T t = default(T);
-                if (rd.Read())
+                if (dr.Read())
                 {
-                    t = ConvertReaderToObject<T>(rd); ;
+                    t = ConvertReaderToObject<T>(dr); ;
                 }
-                rd.Close();
 
                 return t;
             }
@@ -179,12 +173,7 @@ namespace Cinch
             catch (Exception)
             {
                 throw;
-            }
-            finally
-            {
-                Close();
-            }
-
+            }            
         }
 
         /// <summary>
@@ -199,7 +188,6 @@ namespace Cinch
 
                 // run the query
                 await cmd.ExecuteNonQueryAsync();
-
             }
             catch (SqlException sqlEx)
             {
@@ -215,16 +203,9 @@ namespace Cinch
             }
             catch (Exception)
             {
-
                 throw;
             }
-            finally
-            {
-                if (cmd.Transaction == null)
-                {
-                    Close();
-                }
-            }
+            
         }
 
         /// <summary>
@@ -233,15 +214,13 @@ namespace Cinch
         /// <returns>An Object</returns>
         internal async Task<object> ExecuteScalar()
         {
-            object rv = new object();
+            
             try
             {
-                //verbose output
-                //VerboseOutput();
-
                 Open();
 
                 // run the query and return the value
+                object rv = new object();
                 rv = await cmd.ExecuteScalarAsync();
 
                 return rv;
@@ -260,19 +239,8 @@ namespace Cinch
             }
             catch
             {
-
                 throw;
             }
-            finally
-            {
-                if (cmd.Transaction == null)
-                {
-                    Close();
-                }
-            }
-
-
-
 
         }
         #endregion
