@@ -41,22 +41,7 @@ namespace Cinch
         }
         
         #region Constructors        
-        /// <summary>
-        /// Intended to be used for Bulk Commands
-        /// </summary>
-        /// <param name="connStr"></param>
-        public DbConnect(string connStr = null)
-        {
-            if (!string.IsNullOrWhiteSpace(connStr))
-            {
-                _connStr = connStr;
-            }
-
-            SetSqlConnection(ConnStr);
-
-        }
-
-        public DbConnect(string query, CommandType commType, string connStr = null)
+        public DbConnect(string query, CommandType commType = CommandType.StoredProcedure, string connStr = null)
         {
             if (!string.IsNullOrWhiteSpace(connStr))
             {
@@ -91,7 +76,7 @@ namespace Cinch
                 }
                 else
                 {
-                    throw sqlEx;
+                    throw;
                 }
             }
             catch (Exception)
@@ -129,7 +114,7 @@ namespace Cinch
                 }
                 else
                 {
-                    throw sqlEx;
+                    throw;
                 }
             }
             catch (Exception)
@@ -167,7 +152,7 @@ namespace Cinch
                 }
                 else
                 {
-                    throw sqlEx;
+                    throw;
                 }
             }
             catch (Exception)
@@ -198,7 +183,7 @@ namespace Cinch
                 }
                 else
                 {
-                    throw sqlEx;
+                    throw;
                 }
             }
             catch (Exception)
@@ -212,7 +197,7 @@ namespace Cinch
         /// Execute the command and return an object
         /// </summary>
         /// <returns>An Object</returns>
-        internal async Task<object> ExecuteScalar()
+        public async Task<object> ExecuteScalar()
         {
             
             try
@@ -234,7 +219,7 @@ namespace Cinch
                 }
                 else
                 {
-                    throw sqlEx;
+                    throw;
                 }
             }
             catch
@@ -242,6 +227,19 @@ namespace Cinch
                 throw;
             }
 
+        }
+
+        public async Task<T> ExecuteScalarCast<T>()
+        {
+            var resp = typeof(T);
+            object obj = await ExecuteScalar();
+
+            if(obj is T)
+            {
+                return (T)obj;
+            }
+            
+            return default(T);
         }
         #endregion
 
@@ -279,7 +277,7 @@ namespace Cinch
                 }
                 else
                 {
-                    throw sqlEx;
+                    throw;
                 }
             }
             catch (Exception)
