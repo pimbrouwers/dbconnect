@@ -289,7 +289,7 @@ namespace Cinch
         #endregion
 
         #region SqlDataReader Utils
-        private T ConvertReaderToObject<T>(SqlDataReader rd)
+        public static T ConvertReaderToObject<T>(SqlDataReader rd)
         {
 
             Type type = typeof(T);
@@ -336,8 +336,16 @@ namespace Cinch
                     {
                         if (!rd.IsDBNull(i))
                         {
-
-                            prop.SetValue(t, rd.GetValue(i), null);
+                            if(prop.PropertyType == typeof(string) && rd.GetFieldType(i) == typeof(Guid)) {
+                                /*
+                                 * UniqueIdentifier don't cast nicely to string, so do it explicitly
+                                 */
+                                prop.SetValue(t, rd.GetValue(i).ToString(), null);
+                            }
+                            else {
+                                prop.SetValue(t, rd.GetValue(i), null);
+                            }
+                            
                         }
                     }
 
