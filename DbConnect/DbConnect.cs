@@ -473,8 +473,10 @@ namespace Cinch
         /// <param name="commType"></param>
         private void SetSqlCommand(string query, CommandType commType)
         {
-            cmd = new SqlCommand(query, conn);
-            cmd.CommandType = commType;
+            cmd = new SqlCommand(query, conn)
+            {
+                CommandType = commType
+            };
         }
 
         /// <summary>
