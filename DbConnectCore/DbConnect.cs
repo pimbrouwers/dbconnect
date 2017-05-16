@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -37,7 +38,7 @@ namespace Cinch
                 _connStr = value;
             }
         }
-        
+
         #region Constructors        
         public DbConnect(string query, CommandType commType = CommandType.StoredProcedure, string connStr = null)
         {
@@ -82,7 +83,7 @@ namespace Cinch
                 throw;
             }
         }
-        
+
         /// <summary>
         /// Returns a list of objects of the given Type, with propeties set based on how they match up to the fields returned in the recordset.
         /// </summary>
@@ -119,7 +120,7 @@ namespace Cinch
             {
                 throw;
             }
-            
+
         }
 
         /// <summary>
@@ -156,7 +157,7 @@ namespace Cinch
             catch (Exception)
             {
                 throw;
-            }            
+            }
         }
 
         /// <summary>
@@ -188,7 +189,7 @@ namespace Cinch
             {
                 throw;
             }
-            
+
         }
 
         /// <summary>
@@ -197,7 +198,7 @@ namespace Cinch
         /// <returns>An Object</returns>
         public async Task<object> ExecuteScalar()
         {
-            
+
             try
             {
                 Open();
@@ -232,11 +233,11 @@ namespace Cinch
             var resp = typeof(T);
             object obj = await ExecuteScalar();
 
-            if(obj is T)
+            if (obj is T)
             {
                 return (T)obj;
             }
-            
+
             return default(T);
         }
         #endregion
@@ -262,7 +263,7 @@ namespace Cinch
                             bulk.ColumnMappings.Add(mapping);
                         });
                     }
-                    
+
                     await bulk.WriteToServerAsync(reader);
                 }
             }
@@ -291,20 +292,21 @@ namespace Cinch
         {
 
             Type type = typeof(T);
+            TypeInfo typeInfo = type.GetTypeInfo();
 
-            if (type.IsPrimitive || type == (typeof(string)))
+            if (typeInfo.IsPrimitive || type == (typeof(string)))
             {
                 //if this is a primitive type, we can't set a property, so simply attemp to use the first value in the row
                 return (T)rd[0];
 
             }
 
-            PropertyInfo[] props;
+            IEnumerable<PropertyInfo> props;
             ConstructorInfo constr;
 
             if (!DbConnectCache._objectPropertyCache.ContainsKey(type.Name))
             {
-                props = type.GetProperties();
+                props = typeInfo.DeclaredProperties;
                 DbConnectCache._objectPropertyCache.Add(type.Name, props);
             }
             else
@@ -314,13 +316,14 @@ namespace Cinch
 
             if (!DbConnectCache._objectConstructorCache.ContainsKey(type.Name))
             {
-                constr = type.GetConstructor(System.Type.EmptyTypes);
+                constr = typeInfo.DeclaredConstructors.FirstOrDefault();
                 DbConnectCache._objectConstructorCache.Add(type.Name, constr);
             }
             else
             {
                 constr = DbConnectCache._objectConstructorCache[type.Name];
             }
+
             T t = (T)constr.Invoke(new object[0]);
 
             foreach (PropertyInfo prop in props)
@@ -334,16 +337,18 @@ namespace Cinch
                     {
                         if (!rd.IsDBNull(i))
                         {
-                            if(prop.PropertyType == typeof(string) && rd.GetFieldType(i) == typeof(Guid)) {
+                            if (prop.PropertyType == typeof(string) && rd.GetFieldType(i) == typeof(Guid))
+                            {
                                 /*
                                  * UniqueIdentifier don't cast nicely to string, so do it explicitly
                                  */
                                 prop.SetValue(t, rd.GetValue(i).ToString(), null);
                             }
-                            else {
+                            else
+                            {
                                 prop.SetValue(t, rd.GetValue(i), null);
                             }
-                            
+
                         }
                     }
 
