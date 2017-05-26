@@ -127,7 +127,7 @@ namespace Cinch
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public async Task<T> FillObject<T>()
+        public async Task<T> Fillobject<T>()
         {
             try
             {
@@ -194,7 +194,7 @@ namespace Cinch
         /// <summary>
         /// Execute the command and return an object
         /// </summary>
-        /// <returns>An Object</returns>
+        /// <returns>An object</returns>
         public async Task<object> ExecuteScalar()
         {
             
@@ -286,7 +286,7 @@ namespace Cinch
         }
         #endregion
 
-        #region SqlDataReader Utils
+        #region Utils
         public static T ConvertReaderToObject<T>(SqlDataReader rd)
         {
 
@@ -354,13 +354,18 @@ namespace Cinch
         #endregion
 
         #region SqlCommand Parameters
+        public void AddParameter(string id, object value)
+        {
+            AddParameter(id, GetSqlDbType(value), value);
+        }
+
         /// <summary>
         /// Sets up a parameter for the query
         /// </summary>
         /// <param name="id">The ID of the parameter</param>
         /// <param name="type">The Sql type of the parameter</param>
         /// <param name="Value">The value of the parameter</param>
-        public void AddParameter(string id, SqlDbType type, Object Value)
+        public void AddParameter(string id, SqlDbType type, object Value)
         {
             // add the parameter to the command
             cmd.Parameters.Add(id, type);
@@ -384,13 +389,16 @@ namespace Cinch
                 cmd.Parameters[id].Value = Value;
             }
         }
-
+        
         /// <summary>
         /// Used to clear out all of the parameters
         /// </summary>
         public void ClearParameters()
         {
-            cmd.Parameters.Clear();
+            if(cmd.Parameters != null && cmd.Parameters.Count > 0)
+            {
+                cmd.Parameters.Clear();
+            }            
         }
         #endregion
 
@@ -469,18 +477,26 @@ namespace Cinch
         /// </summary>
         /// <param name="query"></param>
         /// <param name="commType"></param>
-        private void SetSqlCommand(string query, CommandType commType)
+        public void SetSqlCommand(string query, CommandType commType = CommandType.StoredProcedure)
         {
-            cmd = new SqlCommand(query, conn)
+            if(cmd == null)
             {
-                CommandType = commType
-            };
+                cmd = new SqlCommand(query, conn)
+                {
+                    CommandType = commType
+                };
+            }
+            else
+            {
+                cmd.CommandText = query;
+                cmd.CommandType = commType;
+            }
         }
 
         /// <summary>
         /// Opens the database connection.
         /// </summary>
-        internal void Open()
+        private void Open()
         {
             if (conn.State == ConnectionState.Closed)
                 conn.Open();
@@ -489,11 +505,51 @@ namespace Cinch
         /// <summary>
         /// Closes the database connection.
         /// </summary>
-        internal void Close()
+        private void Close()
         {
             if (conn != null)
             {
                 conn.Close();
+            }
+        }
+
+        private SqlDbType GetSqlDbType(object paramValue)
+        {
+            Type type = paramValue.GetType();
+            TypeCode typeCode = Type.GetTypeCode(type);
+
+            switch (typeCode)
+            {
+                case TypeCode.Int64:
+                    return SqlDbType.BigInt;
+
+                case TypeCode.Boolean:
+                    return SqlDbType.Bit;
+
+                case TypeCode.Char:
+                    return SqlDbType.NChar;
+
+                case TypeCode.String:
+                    return SqlDbType.NVarChar;
+
+                case TypeCode.DateTime:
+                    return SqlDbType.DateTime;
+
+                case TypeCode.Double:
+                    return SqlDbType.Float;
+
+                case TypeCode.Decimal:
+                    return SqlDbType.Decimal;
+
+                case TypeCode.Int16:
+                case TypeCode.Int32:
+                    return SqlDbType.Int;
+
+                case TypeCode.Byte:
+                    return SqlDbType.TinyInt;
+
+                default:
+                    throw new ArgumentOutOfRangeException("clr type");
             }
         }
 
