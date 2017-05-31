@@ -14,7 +14,7 @@ namespace Cinch
         SqlCommand cmd;
         SqlTransaction trans;
         SqlDataReader dr;
-
+                
         #region Constructors                
         public DbConnect(string connStr, string query = null, CommandType commType = CommandType.StoredProcedure)
         {
@@ -25,10 +25,10 @@ namespace Cinch
 
             SetSqlConnection(connStr);
 
-            if (!string.IsNullOrWhiteSpace(query))
+            if(!string.IsNullOrWhiteSpace(query))
             {
                 SetSqlCommand(query, commType);
-            }
+            }            
         }
         #endregion
 
@@ -44,7 +44,7 @@ namespace Cinch
             dr = await cmd.ExecuteReaderAsync();
             return dr;
         }
-
+        
         /// <summary>
         /// Returns a list of objects of the given Type, with propeties set based on how they match up to the fields returned in the recordset.
         /// </summary>
@@ -70,7 +70,7 @@ namespace Cinch
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         public async Task<T> Fillobject<T>() where T : class, new()
-        {
+        {            
             dr = await FillSqlDataReader();
 
             T t = default(T);
@@ -79,7 +79,7 @@ namespace Cinch
                 t = ConvertReaderToObject<T>(dr); ;
             }
 
-            return t;
+            return t;             
         }
 
         /// <summary>
@@ -113,34 +113,34 @@ namespace Cinch
             var resp = typeof(T);
             object obj = await ExecuteScalar();
 
-            if (obj is T)
+            if(obj is T)
             {
                 return (T)obj;
             }
-
+            
             return default(T);
         }
         #endregion
-
+        
         #region Utils
         public static T ConvertReaderToObject<T>(SqlDataReader rd) where T : class, new()
         {
-
-            Type type = typeof(T);
+            
+            Type type = typeof(T);                        
             var accessor = TypeAccessor.Create(type);
             var members = accessor.GetMembers();
             var t = new T();
-
+            
             for (int i = 0; i < rd.FieldCount; i++)
             {
                 if (!rd.IsDBNull(i))
                 {
                     string fieldName = rd.GetName(i);
-
-                    if (members.Any(m => m.Name == fieldName))
+                    
+                    if(members.Any(m => m.Name == fieldName))
                     {
                         accessor[t, fieldName] = rd.GetValue(i);
-                    }
+                    }                                       
                 }
             }
 
@@ -168,13 +168,12 @@ namespace Cinch
             // set the value of the parameter
             if (Value == null)
             {
-                cmd.Parameters[id].Value = Convert.DBNull;
+                cmd.Parameters[id].Value = DBNull.Value;
             }
             else
             {
                 cmd.Parameters[id].Value = Value;
             }
-            
         }
 
         public void AddOutputParameter(string id, object value)
@@ -201,10 +200,10 @@ namespace Cinch
         /// </summary>
         public void ClearParameters()
         {
-            if (cmd.Parameters != null && cmd.Parameters.Count > 0)
+            if(cmd.Parameters != null && cmd.Parameters.Count > 0)
             {
                 cmd.Parameters.Clear();
-            }
+            }            
         }
         #endregion
 
@@ -285,7 +284,7 @@ namespace Cinch
         /// <param name="commType"></param>
         public void SetSqlCommand(string query, CommandType commType = CommandType.StoredProcedure)
         {
-            if (cmd == null)
+            if(cmd == null)
             {
                 cmd = new SqlCommand(query, conn)
                 {

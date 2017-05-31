@@ -259,3 +259,9 @@ paket-files/
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
+/DbConnectCore.Test/Program.cs
+/DbConnectCore.Test/DbConnectCore.Test.csproj
+/DbConnectCore.Test
+/DbConnectCore.Test/Program.cs
+/DbConnectCore.Test/DbConnectCore.Test.csproj
+/DbConnectCore.Test
