@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Cinch
@@ -13,10 +12,10 @@ namespace Cinch
         SqlConnection conn;
         SqlCommand cmd;
         SqlTransaction trans;
-        SqlDataReader dr;
-                
+        //SqlDataReader dr;
+
         #region Constructors                
-        public DbConnect(string connStr, string query = null, CommandType commType = CommandType.StoredProcedure)
+        public DbConnect(string connStr, string query = null, CommandType commType = CommandType.StoredProcedure, int? commandTimeout = null)
         {
             if (string.IsNullOrWhiteSpace(connStr))
             {
@@ -24,11 +23,7 @@ namespace Cinch
             }
 
             SetSqlConnection(connStr);
-
-            if(!string.IsNullOrWhiteSpace(query))
-            {
-                SetSqlCommand(query, commType);
-            }            
+            SetSqlCommand(query, commType, commandTimeout);
         }
         #endregion
 
@@ -41,10 +36,10 @@ namespace Cinch
         {
             Open();
 
-            dr = await cmd.ExecuteReaderAsync();
+            SqlDataReader dr = await cmd.ExecuteReaderAsync();
             return dr;
         }
-        
+
         /// <summary>
         /// Returns a list of objects of the given Type, with propeties set based on how they match up to the fields returned in the recordset.
         /// </summary>
@@ -52,15 +47,16 @@ namespace Cinch
         /// <returns></returns>
         public async Task<IList<T>> FillList<T>() where T : class, new()
         {
-            dr = await FillSqlDataReader();
-
             List<T> lst = new List<T>();
 
-            while (dr.Read())
+            using (SqlDataReader dr = await FillSqlDataReader())
             {
-                lst.Add(ConvertReaderToObject<T>(dr));
+                while (dr.Read())
+                {
+                    lst.Add(dr.ConvertToObject<T>());
+                }
             }
-
+            
             return lst;
         }
 
@@ -69,17 +65,32 @@ namespace Cinch
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public async Task<T> Fillobject<T>() where T : class, new()
-        {            
-            dr = await FillSqlDataReader();
-
+        public async Task<T> FillObject<T>() where T : class, new()
+        {
             T t = default(T);
-            if (dr.Read())
+            using (SqlDataReader dr = await FillSqlDataReader())
             {
-                t = ConvertReaderToObject<T>(dr); ;
+                if (dr.Read())
+                {
+                    t = dr.ConvertToObject<T>(); ;
+                }
             }
 
-            return t;             
+            return t;
+        }
+
+        public async Task<IList<Dictionary<string, object>>> FillDynamicList()
+        {
+            var lst = new List<Dictionary<string, object>>();
+            using (SqlDataReader dr = await FillSqlDataReader())
+            {
+                while (dr.Read())
+                {
+                    lst.Add(dr.ConvertToDictionary());
+                }
+            }
+
+            return lst;
         }
 
         /// <summary>
@@ -113,41 +124,43 @@ namespace Cinch
             var resp = typeof(T);
             object obj = await ExecuteScalar();
 
-            if(obj is T)
+            if (obj is T)
             {
                 return (T)obj;
             }
-            
+
             return default(T);
         }
         #endregion
-        
-        #region Utils
-        public static T ConvertReaderToObject<T>(SqlDataReader rd) where T : class, new()
-        {
-            
-            Type type = typeof(T);                        
-            var accessor = TypeAccessor.Create(type);
-            var members = accessor.GetMembers();
-            var t = new T();
-            
-            for (int i = 0; i < rd.FieldCount; i++)
-            {
-                if (!rd.IsDBNull(i))
-                {
-                    string fieldName = rd.GetName(i);
-                    
-                    if(members.Any(m => m.Name == fieldName))
-                    {
-                        accessor[t, fieldName] = rd.GetValue(i);
-                    }                                       
-                }
-            }
 
-            return t;
+        #region Bulk Copy
+        public async Task BulkInsert<T>(IEnumerable<T> items, string destinationTableName, int batchSize = 5000, int? bulkCopyTimeout = null)
+        {
+            using (var bcp = new SqlBulkCopy(conn))
+            using (var dataReader = ObjectReader.Create(items))
+            {
+                Type type = typeof(T);
+                var accessor = TypeAccessor.Create(type);
+                var members = accessor.GetMembers();
+                
+                foreach(var member in members)
+                {
+                    bcp.ColumnMappings.Add(new SqlBulkCopyColumnMapping(member.Name, member.Name));
+                }                
+
+                Open();
+
+                bcp.DestinationTableName = destinationTableName;
+                bcp.BatchSize = batchSize;
+
+                if (bulkCopyTimeout.HasValue)
+                    bcp.BulkCopyTimeout = bulkCopyTimeout.Value;
+
+                await bcp.WriteToServerAsync(dataReader);
+            }            
         }
         #endregion
-
+        
         #region SqlCommand Parameters
         public void AddParameter(string id, object value)
         {
@@ -200,10 +213,10 @@ namespace Cinch
         /// </summary>
         public void ClearParameters()
         {
-            if(cmd.Parameters != null && cmd.Parameters.Count > 0)
+            if (cmd != null && cmd.Parameters != null && cmd.Parameters.Count > 0)
             {
                 cmd.Parameters.Clear();
-            }            
+            }
         }
         #endregion
 
@@ -281,21 +294,31 @@ namespace Cinch
         /// Sets internal SqlCommand
         /// </summary>
         /// <param name="query"></param>
-        /// <param name="commType"></param>
-        public void SetSqlCommand(string query, CommandType commType = CommandType.StoredProcedure)
+        /// <param name="commandType"></param>
+        public void SetSqlCommand(string query, CommandType commandType = CommandType.StoredProcedure, int? commandTimeout = null)
         {
-            if(cmd == null)
+            if (cmd == null)
             {
-                cmd = new SqlCommand(query, conn)
+                cmd = new SqlCommand();
+                cmd.Connection = conn;
+                cmd.CommandType = commandType;
+
+                if (!string.IsNullOrWhiteSpace(query))
                 {
-                    CommandType = commType
-                };
+                    cmd.CommandText = query;
+                }
             }
             else
             {
                 cmd.CommandText = query;
-                cmd.CommandType = commType;
+                cmd.CommandType = commandType;
             }
+
+            /*
+             * timeout
+             */
+            if (commandTimeout.HasValue)
+                cmd.CommandTimeout = commandTimeout.Value;
         }
 
         /// <summary>
@@ -315,6 +338,11 @@ namespace Cinch
             if (conn != null)
             {
                 conn.Close();
+            }
+
+            if (cmd != null)
+            {
+                cmd.Dispose();
             }
         }
 

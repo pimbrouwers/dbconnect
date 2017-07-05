@@ -151,6 +151,9 @@ namespace Cinch
         #region SqlCommand Parameters
         public void AddParameter(string id, object value)
         {
+            if (value == null)
+                throw new ArgumentNullException("SqlDbType must be provided if value null");
+
             AddParameter(id, GetSqlDbType(value), value);
         }
 
@@ -159,20 +162,20 @@ namespace Cinch
         /// </summary>
         /// <param name="id">The ID of the parameter</param>
         /// <param name="type">The Sql type of the parameter</param>
-        /// <param name="Value">The value of the parameter</param>
-        public void AddParameter(string id, SqlDbType type, object Value)
+        /// <param name="value">The value of the parameter</param>
+        public void AddParameter(string id, SqlDbType type, object value)
         {
             // add the parameter to the command
             cmd.Parameters.Add(id, type);
 
             // set the value of the parameter
-            if (Value == null)
+            if (value == null)
             {
                 cmd.Parameters[id].Value = Convert.DBNull;
             }
             else
             {
-                cmd.Parameters[id].Value = Value;
+                cmd.Parameters[id].Value = value;
             }
             
         }
