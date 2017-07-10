@@ -9,13 +9,14 @@ namespace Cinch
 {
     public class DbConnect : IDisposable
     {
+
         SqlConnection conn;
         SqlCommand cmd;
         SqlTransaction trans;
         //SqlDataReader dr;
 
         #region Constructors                
-        public DbConnect(string connStr, string query = null, CommandType commType = CommandType.StoredProcedure, int? commandTimeout = null)
+        public DbConnect(string connStr, string query = null, CommandType commandType = CommandType.StoredProcedure, int? commandTimeout = null)
         {
             if (string.IsNullOrWhiteSpace(connStr))
             {
@@ -23,7 +24,7 @@ namespace Cinch
             }
 
             SetSqlConnection(connStr);
-            SetSqlCommand(query, commType, commandTimeout);
+            SetSqlCommand(query, commandType, commandTimeout);
         }
         #endregion
 
@@ -164,6 +165,9 @@ namespace Cinch
         #region SqlCommand Parameters
         public void AddParameter(string id, object value)
         {
+            if (value == null)
+                throw new ArgumentNullException("SqlDbType must be provided if value null");
+
             AddParameter(id, GetSqlDbType(value), value);
         }
 
