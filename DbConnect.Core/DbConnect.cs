@@ -135,7 +135,7 @@ namespace Cinch
         #endregion
 
         #region Bulk Copy
-        public async Task BulkInsert<T>(IEnumerable<T> items, string destinationTableName, int batchSize = 5000, int? bulkCopyTimeout = null)
+        public async Task BulkInsert<T>(IEnumerable<T> items, string destinationTableName, int batchSize = 5000, int? bulkCopyTimeout = null, IEnumerable<string> ignoreCols = null)
         {
             using (var bcp = new SqlBulkCopy(conn))
             using (var dataReader = ObjectReader.Create(items))
@@ -146,6 +146,9 @@ namespace Cinch
                 
                 foreach(var member in members)
                 {
+                    if (ignoreCols != null && ignoreCols.Contains(member.Name))
+                        continue;
+
                     bcp.ColumnMappings.Add(new SqlBulkCopyColumnMapping(member.Name, member.Name));
                 }                
 

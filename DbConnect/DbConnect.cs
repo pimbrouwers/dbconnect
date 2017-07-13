@@ -13,8 +13,7 @@ namespace Cinch
         SqlConnection conn;
         SqlCommand cmd;
         SqlTransaction trans;
-        //SqlDataReader dr;
-
+        
         #region Constructors                
         public DbConnect(string connStr, string query = null, CommandType commandType = CommandType.StoredProcedure, int? commandTimeout = null)
         {
@@ -60,13 +59,13 @@ namespace Cinch
 
             return lst;
         }
-
+        
         /// <summary>
         /// Populates a single object of the given Type, with propeties set based on how they match up to the fields returned in the first row of the recordset.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public async Task<T> Fillobject<T>() where T : class, new()
+        public async Task<T> FillObject<T>() where T : class, new()
         {
             T t = default(T);
             using (SqlDataReader dr = await FillSqlDataReader())
@@ -135,7 +134,7 @@ namespace Cinch
         #endregion
 
         #region Bulk Copy
-        public async Task BulkInsert<T>(IEnumerable<T> items, string destinationTableName, int batchSize = 5000, int? bulkCopyTimeout = null)
+        public async Task BulkInsert<T>(IEnumerable<T> items, string destinationTableName, int batchSize = 5000, int? bulkCopyTimeout = null, IEnumerable<string> ignoreCols = null)
         {
             using (var bcp = new SqlBulkCopy(conn))
             using (var dataReader = ObjectReader.Create(items))
@@ -146,6 +145,9 @@ namespace Cinch
 
                 foreach (var member in members)
                 {
+                    if (ignoreCols != null && ignoreCols.Contains(member.Name))
+                        continue;
+
                     bcp.ColumnMappings.Add(new SqlBulkCopyColumnMapping(member.Name, member.Name));
                 }
 
@@ -161,8 +163,7 @@ namespace Cinch
             }
         }
         #endregion
-
-
+        
         #region SqlCommand Parameters
         public void AddParameter(string id, object value)
         {
