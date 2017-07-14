@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Cinch
@@ -135,22 +136,22 @@ namespace Cinch
         #endregion
 
         #region Bulk Copy
-        public async Task BulkInsert<T>(IEnumerable<T> items, string destinationTableName, int batchSize = 5000, int? bulkCopyTimeout = null, IEnumerable<string> ignoreCols = null)
+        public async Task BulkInsert<T>(SqlDataReader dr, string destinationTableName, int batchSize = 5000, int? bulkCopyTimeout = null, IEnumerable<string> ignoreCols = null) where T : class, new()
         {
             using (var bcp = new SqlBulkCopy(conn))
-            using (var dataReader = ObjectReader.Create(items))
+            using (var dataReader = ObjectReader.Create(dr.AsEnumerable<T>()))
             {
                 Type type = typeof(T);
                 var accessor = TypeAccessor.Create(type);
                 var members = accessor.GetMembers();
-                
-                foreach(var member in members)
+
+                foreach (var member in members)
                 {
                     if (ignoreCols != null && ignoreCols.Contains(member.Name))
                         continue;
 
                     bcp.ColumnMappings.Add(new SqlBulkCopyColumnMapping(member.Name, member.Name));
-                }                
+                }
 
                 Open();
 
@@ -161,10 +162,10 @@ namespace Cinch
                     bcp.BulkCopyTimeout = bulkCopyTimeout.Value;
 
                 await bcp.WriteToServerAsync(dataReader);
-            }            
+            }
         }
         #endregion
-        
+
         #region SqlCommand Parameters
         public void AddParameter(string id, object value)
         {

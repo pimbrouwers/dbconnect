@@ -60,6 +60,20 @@ namespace Cinch
             return lst;
         }
         
+        public async Task<IList<Dictionary<string, object>>> FillDynamicList()
+        {
+            var lst = new List<Dictionary<string, object>>();
+            using (SqlDataReader dr = await FillSqlDataReader())
+            {
+                while (dr.Read())
+                {
+                    lst.Add(dr.ConvertToDictionary());
+                }
+            }
+
+            return lst;
+        }
+
         /// <summary>
         /// Populates a single object of the given Type, with propeties set based on how they match up to the fields returned in the first row of the recordset.
         /// </summary>
@@ -77,20 +91,6 @@ namespace Cinch
             }
 
             return t;
-        }
-
-        public async Task<IList<Dictionary<string, object>>> FillDynamicList()
-        {
-            var lst = new List<Dictionary<string, object>>();
-            using (SqlDataReader dr = await FillSqlDataReader())
-            {
-                while (dr.Read())
-                {
-                    lst.Add(dr.ConvertToDictionary());
-                }
-            }
-
-            return lst;
         }
 
         /// <summary>
@@ -134,10 +134,10 @@ namespace Cinch
         #endregion
 
         #region Bulk Copy
-        public async Task BulkInsert<T>(IEnumerable<T> items, string destinationTableName, int batchSize = 5000, int? bulkCopyTimeout = null, IEnumerable<string> ignoreCols = null)
+        public async Task BulkInsert<T>(SqlDataReader dr, string destinationTableName, int batchSize = 5000, int? bulkCopyTimeout = null, IEnumerable<string> ignoreCols = null) where T : class, new()
         {
             using (var bcp = new SqlBulkCopy(conn))
-            using (var dataReader = ObjectReader.Create(items))
+            using (var dataReader = ObjectReader.Create(dr.AsEnumerable<T>()))
             {
                 Type type = typeof(T);
                 var accessor = TypeAccessor.Create(type);
@@ -161,7 +161,7 @@ namespace Cinch
 
                 await bcp.WriteToServerAsync(dataReader);
             }
-        }
+        }        
         #endregion
         
         #region SqlCommand Parameters

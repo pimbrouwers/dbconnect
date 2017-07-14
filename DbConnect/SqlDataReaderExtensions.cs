@@ -10,10 +10,15 @@ namespace Cinch
 {
     public static class SqlDataReaderExtensions
     {
+        public static IEnumerable<T> AsEnumerable<T>(this SqlDataReader rd) where T : class, new()
+        {
+            using (rd)
+                while (rd.Read())
+                    yield return rd.ConvertToObject<T>();
+        }
+
         public static T ConvertToObject<T>(this SqlDataReader rd) where T : class, new()
         {
-
-
             Type type = typeof(T);
             var accessor = TypeAccessor.Create(type);
             var members = accessor.GetMembers();
