@@ -1,5 +1,6 @@
 ﻿using FastMember;
 using System;
+using System.Linq;
 
 namespace Cinch
 {
