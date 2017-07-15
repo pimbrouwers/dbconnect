@@ -6,6 +6,7 @@ using System.Linq;
 
 namespace Cinch
 {
+    
     public static class SqlDataReaderExtensions
     {
         public static IEnumerable<T> AsEnumerable<T>(this SqlDataReader rd) where T : class, new()
@@ -20,18 +21,14 @@ namespace Cinch
             Type type = typeof(T);
             var accessor = TypeAccessor.Create(type);
             var members = accessor.GetMembers();
+            
             var t = new T();
-
+            
             for (int i = 0; i < rd.FieldCount; i++)
             {
                 if (!rd.IsDBNull(i))
                 {
-                    string fieldName = rd.GetName(i);
-
-                    if (members.Any(m => string.Equals(m.Name, fieldName, StringComparison.OrdinalIgnoreCase)))
-                    {
-                        accessor[t, fieldName] = rd.GetValue(i);
-                    }
+                    accessor.AssignValue(t, members, rd.GetName(i), rd.GetValue(i));
                 }
             }
 

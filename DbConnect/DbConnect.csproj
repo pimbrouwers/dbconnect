@@ -48,6 +48,7 @@
     <Compile Include="DbConnect.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SqlDataReaderExtensions.cs" />
+    <Compile Include="TypeAccessorExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
