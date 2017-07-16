@@ -31,14 +31,14 @@ using(var db = new DbConnect("your connection string", "dbo.SomeProcedure")){
 }
 ```
 
-## Executing Scalar Queries
+### Executing Scalar Queries
 ```c#
 using(var db = new DbConnect("your connection string", "dbo.SomeProcedure")){
     return await db.ExecuteScalarCast<int>();
 }
 ```
 
-## Multiple Result Sets
+### Multiple Result Sets
 ```c#
 using(var db = new DbConnect("your connection string", "dbo.SomeProcedure")){
     using(var rd = db.FillSqlDataReader()){
