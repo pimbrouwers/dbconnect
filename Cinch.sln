@@ -1,13 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.6
+VisualStudioVersion = 15.0.26430.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DbConnect", "DbConnect\DbConnect.csproj", "{866D6DCF-70B7-4885-B3BC-74B9E23BF425}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DbConnect.Core", "DbConnect.Core\DbConnect.Core.csproj", "{6599E1A6-8B9D-4EDD-BF2C-4F209EEC1C4F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DbConnect.Core", "DbConnect.Core\DbConnect.Core.csproj", "{6599E1A6-8B9D-4EDD-BF2C-4F209EEC1C4F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DbConnectCore.Test", "DbConnectCore.Test\DbConnectCore.Test.csproj", "{D5DB9BA0-679D-4AB5-91AD-A62DBF43E425}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DbConnectCore.Test", "DbConnectCore.Test\DbConnectCore.Test.csproj", "{D5DB9BA0-679D-4AB5-91AD-A62DBF43E425}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

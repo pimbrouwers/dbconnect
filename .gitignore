@@ -265,3 +265,4 @@ __pycache__/
 /DbConnectCore.Test/Program.cs
 /DbConnectCore.Test/DbConnectCore.Test.csproj
 /DbConnectCore.Test
+/DbConnectFSharp.Text

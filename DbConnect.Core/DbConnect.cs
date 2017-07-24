@@ -14,7 +14,6 @@ namespace Cinch
         SqlConnection conn;
         SqlCommand cmd;
         SqlTransaction trans;
-        //SqlDataReader dr;
 
         #region Constructors                
         public DbConnect(string connStr, string query = null, CommandType commandType = CommandType.StoredProcedure, int? commandTimeout = null)
@@ -41,7 +40,7 @@ namespace Cinch
             SqlDataReader dr = await cmd.ExecuteReaderAsync();
             return dr;
         }
-
+        
         /// <summary>
         /// Returns a list of objects of the given Type, with propeties set based on how they match up to the fields returned in the recordset.
         /// </summary>
