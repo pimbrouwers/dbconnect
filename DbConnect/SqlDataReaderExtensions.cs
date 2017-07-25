@@ -29,7 +29,10 @@ namespace Cinch
             {
                 if (!rd.IsDBNull(i))
                 {
-                    accessor.AssignValue(t, members, rd.GetName(i), rd.GetValue(i));
+                    string fieldName = rd.GetName(i);
+
+                    if (members.Any(m => string.Equals(m.Name, fieldName, StringComparison.OrdinalIgnoreCase)))
+                        accessor[t, fieldName] = rd.GetValue(i);
                 }
             }
 
