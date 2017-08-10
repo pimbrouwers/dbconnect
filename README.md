@@ -1,6 +1,6 @@
 # DbConnect.NET
 
-DbConnect is a tiny, performant abstraction encapsulating ADO.NET, referencing .NET Standard 1.4. The intention of the project, is to make accessing a SQL Server database much simpler, and less verbose. It supports both **.NET CORE** and **.NET Framework**. This project was heavily if not entirely inspired by my mentor @joelvarty.
+DbConnect is a tiny, performant abstraction encapsulating ADO.NET. The intention of the project, is to make accessing a SQL Server database much simpler, and less verbose (i.e. cinch-ier). Referencing .NET Standard 1.4 means DbConnect supports both **.NET Core** and **.NET Framework**. This project was heavily if not entirely inspired by my mentor @joelvarty.
 
 DbConnect leverages Marc Gravell's amazing FastMember for object construction, via a helper method which converts `SqlDataReader` to any instantiable object. `DataReader`'s are used throughout the stack to reduce the overall memory footprint as much as humanly possible.
 
@@ -17,6 +17,8 @@ using(var db = new DbConnect("your connection string")){
 
 ### Execute Query
 
+This will buffer the datareader.
+
 ```c#
 using(var db = new DbConnect("your connection string")){
     var someObjects = db.Execute<SomeObject>("dbo.someSproc");
@@ -25,7 +27,7 @@ using(var db = new DbConnect("your connection string")){
 
 ### Execute Reader
 
-This approach is useful for dealing with multiple result sets, or you need to work with an unbuffered data reader (usually only needed when the record count or data volume is high). 
+This approach is useful for dealing with multiple result sets, or if you need to work with an unbuffered data reader (usually only needed when the record count or data volume is high). 
 
 Note that `Read<T>()` is optional, you are entirely free to use and manipulate the reader as needed.
 
