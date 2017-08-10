@@ -143,4 +143,4 @@ using(var db = new DbConnect("your connection string")){
 }
 ```
 
-Built with ♥ by [Pim Brouwers](https://github.com/pimbrouwers) in Toronto, ON. Licensed under [MIT](https://github.com/pimbrouwers/HydrogenCSS/blob/master/LICENSE).
+Built with ♥ by [Pim Brouwers](https://github.com/pimbrouwers) in Toronto, ON. Licensed under [MIT](https://github.com/pimbrouwers/DbConnect/blob/master/LICENSE).
