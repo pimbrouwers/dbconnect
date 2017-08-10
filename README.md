@@ -17,6 +17,8 @@ using(var db = new DbConnect("your connection string")){
 
 ### Execute Query
 
+This will buffer the datareader.
+
 ```c#
 using(var db = new DbConnect("your connection string")){
     var someObjects = db.Execute<SomeObject>("dbo.someSproc");
