@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard1.4</TargetFramework>
-    <AssemblyName>DbConnect</AssemblyName>
+    <AssemblyName>Cinch.DbConnect</AssemblyName>
     <RootNamespace>Cinch</RootNamespace>
   </PropertyGroup>
 

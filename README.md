@@ -7,6 +7,9 @@ DbConnect leverages Marc Gravell's amazing FastMember for object construction, v
 ## Getting Started
 By default DbConnect assumes you're calling Stored Procedures (because why wouldn't you? am I right?!). But this is entirely at execution time.
 
+Install using nuget:
+`Install-Package Cinch.DbConnect`
+
 ### Execute Command (no results)
 
 ```c#
