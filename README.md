@@ -27,7 +27,7 @@ using(var db = new DbConnect("your connection string")){
 
 ### Execute Reader
 
-This approach is useful for dealing with multiple result sets, or you need to work with an unbuffered data reader (usually only needed when the record count or data volume is high). 
+This approach is useful for dealing with multiple result sets, or if you need to work with an unbuffered data reader (usually only needed when the record count or data volume is high). 
 
 Note that `Read<T>()` is optional, you are entirely free to use and manipulate the reader as needed.
 
