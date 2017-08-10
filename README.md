@@ -1,6 +1,6 @@
 # DbConnect.NET
 
-DbConnect is a tiny, performant abstraction encapsulating ADO.NET, referencing .NET Standard 1.4. The intention of the project, is to make accessing a SQL Server database much simpler, and less verbose (i.e. cinch-ier). It supports both **.NET CORE** and **.NET Framework**. This project was heavily if not entirely inspired by my mentor @joelvarty.
+DbConnect is a tiny, performant abstraction encapsulating ADO.NET. The intention of the project, is to make accessing a SQL Server database much simpler, and less verbose (i.e. cinch-ier). Referencing .NET Standard 1.4 means DbConnect supports both **.NET CORE** and **.NET Framework**. This project was heavily if not entirely inspired by my mentor @joelvarty.
 
 DbConnect leverages Marc Gravell's amazing FastMember for object construction, via a helper method which converts `SqlDataReader` to any instantiable object. `DataReader`'s are used throughout the stack to reduce the overall memory footprint as much as humanly possible.
 
