@@ -8,19 +8,27 @@ namespace Cinch
     {
         public IList<DbParam> Parameters { get; set; }
 
-        public void Add(string name, object value)
+        public void Add(string name, object value, SqlDbType? dbType = null)
         {
-            var p = new DbParam(name, value);
+            var p = new DbParam(name, value, dbType);
+
+            Add(p);
         }
 
-        public void Add (DbParam p)
+        public void AddOutput(string name, SqlDbType dbType, int? size = null)
+        {
+            var p = new DbParam(name, null, dbType, ParameterDirection.Output, size);
+
+            Add(p);
+        }
+        
+        public void Add(DbParam p)
         {
             if (Parameters == null)
                 Parameters = new List<DbParam>();
 
             Parameters.Add(p);
         }
-        
     }
 
     public class DbParam
@@ -29,23 +37,17 @@ namespace Cinch
         public object Value { get; set; }
         public SqlDbType? DbType { get; set; }
         public ParameterDirection ParameterDirection { get; set; }
+        public int? Size { get; set; }
 
         public DbParam() { }
 
-        public DbParam(string name, object value)
+        public DbParam(string name, object value, SqlDbType? dbType = null, ParameterDirection parameterDirection = ParameterDirection.Input, int? size = null)
         {
             Name = name;
             Value = value;
-        }
-
-        public DbParam(string name, object value, SqlDbType dbType) : this(name, value)
-        {
             DbType = dbType;
-        }
-
-        public DbParam(string name, object value, SqlDbType dbType, ParameterDirection parameterDirection) : this(name, value, dbType)
-        {
             ParameterDirection = parameterDirection;
+            Size = size;
         }
-    }
+    }      
 }

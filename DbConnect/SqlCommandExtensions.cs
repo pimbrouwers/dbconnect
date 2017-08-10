@@ -7,7 +7,7 @@ namespace Cinch
 {
     public static class SqlCommandExtensions
     {
-        public static SqlDataReader FillDataReader(this SqlCommand cmd)
+        public static SqlDataReader GetReader(this SqlCommand cmd)
         {
             if (cmd.Connection.State != ConnectionState.Open)
             {
@@ -26,11 +26,11 @@ namespace Cinch
                 {
                     if(dbParam.ParameterDirection == ParameterDirection.Output)
                     {
-                        cmd.AddOutputParameter(dbParam.Name, (SqlDbType)dbParam.DbType);
+                        cmd.AddOutputParameter(dbParam.Name, dbParam.Value, dbParam.Size, dbParam.DbType.Value);
                     }
                     else if(dbParam.DbType != null)
                     {
-                        cmd.AddParameter(dbParam.Name, dbParam.Value, (SqlDbType)dbParam.DbType);
+                        cmd.AddParameter(dbParam.Name, dbParam.Value, dbParam.DbType.Value);
                     }
                     else
                     {
@@ -40,10 +40,16 @@ namespace Cinch
             }
         }
 
-        public static void AddOutputParameter(this SqlCommand cmd, string name, SqlDbType dbType)
+        public static void AddOutputParameter(this SqlCommand cmd, string name, object value, int? size, SqlDbType dbType)
         {
             var param = cmd.Parameters.Add(name, dbType);
-            param.Direction = ParameterDirection.Output;
+            param.Direction = ParameterDirection.Output;            
+            param.Value = value;
+
+            if (size.HasValue)
+                param.Size = size.Value;
+            else
+                param.Size = -1;
         }
 
         public static void AddParameter(this SqlCommand cmd, string name, object value)
@@ -73,6 +79,26 @@ namespace Cinch
             }
         }
 
+        public static T GetOuputValue<T>(this SqlCommand cmd, string name)
+        {
+            object val = null;
+
+            if(cmd.Parameters.Contains(name))
+            {
+                val = cmd.Parameters[name].Value;
+            }
+
+            if (val == DBNull.Value)
+            {
+                if (default(T) != null)
+                {
+                    throw new Exception("Attempting to cast a DBNull to a non nullable type.");
+                }
+                return default(T);
+            }
+            return (T)val;
+        }
+
         public static void MapParameters(this SqlCommand cmd, object parameters)
         {
             var accessor = TypeAccessor.Create(parameters.GetType());
@@ -86,9 +112,8 @@ namespace Cinch
         }
 
         private static SqlDbType GetSqlDbType(object paramValue)
-        {
-            Type type = paramValue.GetType();
-            TypeCode typeCode = Type.GetTypeCode(type);
+        {            
+            TypeCode typeCode = Convert.GetTypeCode(paramValue);
 
             switch (typeCode)
             {
