@@ -8,7 +8,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 
 namespace Cinch
-{
+{    
     public class DbConnect : IDisposable
     { 
         SqlConnection conn;
@@ -27,18 +27,32 @@ namespace Cinch
             trans?.Dispose();
         }
 
-        public void Execute(string query, object parameters = null, DbParams dbParams = null, CommandType commandType = CommandType.StoredProcedure, int commandTimeout = 30, SqlTransaction transaction = null, Action<SqlCommand> afterExecution = null)
+        public void Execute(string query, 
+                            object parameters = null, 
+                            DbParams dbParams = null, 
+                            CommandType commandType = CommandType.StoredProcedure, 
+                            int commandTimeout = 30, 
+                            SqlTransaction transaction = null, 
+                            Action<SqlCommand> afterExecution = null)
+        {
+            ExecuteAsync(query, parameters, dbParams, commandType, commandTimeout, transaction, afterExecution).Wait();
+        }
+
+        public async Task ExecuteAsync(string query, 
+                                       object parameters = null, 
+                                       DbParams dbParams = null, 
+                                       CommandType commandType = CommandType.StoredProcedure, 
+                                       int commandTimeout = 30, 
+                                       SqlTransaction transaction = null, 
+                                       Action<SqlCommand> afterExecution = null)
         {
             Open();
-                        
+
             using (cmd = BuildCommand(conn, query, commandType, commandTimeout, parameters, dbParams, transaction))
             {
-                cmd.ExecuteNonQuery();
+                await cmd.ExecuteNonQueryAsync();
 
-                if(afterExecution != null)
-                {
-                    afterExecution(cmd);
-                }
+                afterExecution?.Invoke(cmd);
             }
         }
 
