@@ -26,7 +26,7 @@ namespace Cinch
             cmd?.Dispose();
             trans?.Dispose();
         }
-
+        
         public void Execute(string query, 
                             object parameters = null, 
                             DbParams dbParams = null, 
@@ -35,22 +35,11 @@ namespace Cinch
                             SqlTransaction transaction = null, 
                             Action<SqlCommand> afterExecution = null)
         {
-            ExecuteAsync(query, parameters, dbParams, commandType, commandTimeout, transaction, afterExecution).Wait();
-        }
-
-        public async Task ExecuteAsync(string query, 
-                                       object parameters = null, 
-                                       DbParams dbParams = null, 
-                                       CommandType commandType = CommandType.StoredProcedure, 
-                                       int commandTimeout = 30, 
-                                       SqlTransaction transaction = null, 
-                                       Action<SqlCommand> afterExecution = null)
-        {
             Open();
 
             using (cmd = BuildCommand(conn, query, commandType, commandTimeout, parameters, dbParams, transaction))
             {
-                await cmd.ExecuteNonQueryAsync();
+                cmd.ExecuteNonQuery();
 
                 afterExecution?.Invoke(cmd);
             }
