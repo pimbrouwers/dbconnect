@@ -1,7 +1,7 @@
 # DbConnect.NET
 [![Build Status](https://travis-ci.org/pimbrouwers/DbConnect.svg?branch=master)](https://travis-ci.org/pimbrouwers/DbConnect/)
 
-DbConnect is a tiny, performant abstraction encapsulating ADO.NET. The intention of the project, is to make accessing a ~SQL Server database much simpler, and less verbose (i.e. cinch-ier). You can think of DbConnect as useful set of extension methods for `SqlConnection`, `SqlCommand`, `SqlDataReader` and `SqlBulkCopy` with a fluent api for building both `SqlCommands` and `SqlBulkCopy` routines. 
+DbConnect is a tiny, performant abstraction encapsulating ADO.NET. The intention of the project, is to make accessing a SQL Server database much simpler, and less verbose (i.e. cinch-ier). You can think of DbConnect as useful set of extension methods for `SqlConnection`, `SqlCommand`, `SqlDataReader` and `SqlBulkCopy` with a fluent api for building both `SqlCommands` and `SqlBulkCopy` routines. 
 
 DbConnect is compiled against .NET Standard 1.6, which provides support for both both **.NET Core >= 1.0** and **.NET Framework 4.6.1**. This project was heavily if not entirely inspired by my mentor [@joelvarty](https://github.com/joelvarty).
 
