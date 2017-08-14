@@ -65,9 +65,9 @@ This approach is useful for dealing with multiple result sets, or if you need to
 
 ```c#
 using(var db = new SqlConnection("your connection string")){
-    using(var dbReader = db.Reader("dbo.someSproc", new { param1 = "yayAParam" })){
-        var someObjects = dbReader.rd.Read<SomeObject>();
-        var someOtherObjects = dbReader.rd.Read<SomeOtherObject>();
+    using(var rd = db.Reader("dbo.someSproc", new { param1 = "yayAParam" })){
+        var someObjects = rd.Read<SomeObject>();
+        var someOtherObjects = rd.Read<SomeOtherObject>();
     }
 }
 
