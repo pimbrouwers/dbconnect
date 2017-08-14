@@ -181,7 +181,7 @@ using(var db = new SqlConnection("your connection string")){
 
 ## Transactions
 
-DbConnect has full support for transactions and exposes two helper methods to kick them off: `BeginTransaction` and `BeginTransactionAsync`. 
+DbConnect executions have full support for transactions via the fluent api and exposes two extension methods to kick them off: `BeginTransaction` and `BeginTransactionAsync`. 
 
 ```c#
 using(var db = new SqlConnection("your connection string")){
