@@ -146,7 +146,7 @@ namespace Cinch.DbConnect
 
                 using (var rd = cmd.GetReader())
                 {
-                    return rd.Read<T>();
+                    return rd.Enumerate<T>();
                 }
             }
         }
@@ -159,7 +159,7 @@ namespace Cinch.DbConnect
 
                 using (var rd = await cmd.GetReaderAsync())
                 {
-                    return await rd.ReadAsync<T>();
+                    return await rd.EnumerateAsync<T>();
                 }
             }
         }

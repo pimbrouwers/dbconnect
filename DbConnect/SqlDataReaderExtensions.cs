@@ -56,7 +56,7 @@ namespace Cinch.DbConnect
             return dict;
         }
 
-        public static IEnumerable<T> Read<T>(this SqlDataReader rd)
+        public static IEnumerable<T> Enumerate<T>(this SqlDataReader rd)
         {
             while (rd.Read())
                 yield return rd.ConvertTo<T>();
@@ -64,7 +64,7 @@ namespace Cinch.DbConnect
             rd.NextResult();
         }
 
-        public static async Task<IEnumerable<T>> ReadAsync<T>(this SqlDataReader rd)
+        public static async Task<IEnumerable<T>> EnumerateAsync<T>(this SqlDataReader rd)
         {
             var lst = new List<T>();
 

@@ -8,13 +8,18 @@ namespace Cinch.DbConnect
 {
     public class DbReader : IDisposable
     {
-        public SqlCommand cmd;
-        public SqlDataReader rd;
+        SqlCommand cmd;
+        SqlDataReader rd;
 
         public DbReader(SqlCommand cmd, SqlDataReader rd)
         {
             this.cmd = cmd;
             this.rd = rd;
+        }
+
+        public SqlDataReader Get()
+        {
+            return this.rd;
         }
 
         public void Dispose()
@@ -24,16 +29,4 @@ namespace Cinch.DbConnect
         }
     }
 
-    public static class DbReaderExtensions
-    {
-        public static IEnumerable<T> Read<T>(this DbReader dbReader)
-        {
-            return dbReader.rd.Read<T>();
-        }
-
-        public static async Task<IEnumerable<T>> ReadAsync<T>(this DbReader dbReader)
-        {
-            return await dbReader.rd.ReadAsync<T>();
-        }
-    }
 }
