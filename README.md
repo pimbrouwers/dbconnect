@@ -1,7 +1,9 @@
 # DbConnect.NET
 [![Build Status](https://travis-ci.org/pimbrouwers/DbConnect.svg?branch=master)](https://travis-ci.org/pimbrouwers/DbConnect/)
 
-DbConnect is a tiny, performant abstraction encapsulating ADO.NET. The intention of the project, is to make accessing a SQL Server database much simpler, and less verbose (i.e. cinch-ier). Referencing .NET Standard means DbConnect supports both **.NET Core** and **.NET Framework**. This project was heavily if not entirely inspired by my mentor [@joelvarty](https://github.com/joelvarty).
+DbConnect is a tiny, performant abstraction encapsulating ADO.NET. The intention of the project, is to make accessing a ~SQL Server database much simpler, and less verbose (i.e. cinch-ier). You can think of DbConnect as useful set of extension methods for `SqlConnection`, `SqlCommand`, `SqlDataReader` and `SqlBulkCopy` with a fluent api for building both `SqlCommands` and `SqlBulkCopy` routines. 
+
+DbConnect is compiled against .NET Standard 1.6, which provides support for both both **.NET Core >= 1.0** and **.NET Framework 4.6.1**. This project was heavily if not entirely inspired by my mentor [@joelvarty](https://github.com/joelvarty).
 
 DbConnect leverages Marc Gravell's amazing FastMember for object construction, via a helper method which converts `SqlDataReader` to any instantiable object. `DataReader`'s are used throughout the stack to reduce the overall memory footprint as much as humanly possible.
 
@@ -26,13 +28,13 @@ These helper methods expose the:
 #### Command (no results)
 
 ```c#
-using(var db = new DbConnect("your connection string")){
+using(var db = new SqlConnection("your connection string")){
     db.Execute("dbo.someSproc", new { param1 = "yayAParam" }); //stored procedure
     db.Execute("select top 100 from dbo.SomeTable where someCol = @param1", new { param1 = "yayAParam" }, CommandType.Text); //inline
 }
 
 //async
-using(var db = new DbConnect("your connection string")){
+using(var db = new SqlConnection("your connection string")){
     await db.ExecuteAsync("dbo.someSproc", new { param1 = "yayAParam" }); //stored procedure
     await db.ExecuteAsync("select top 100 from dbo.SomeTable", commandType: CommandType.Text); //inline
 }
@@ -43,12 +45,12 @@ using(var db = new DbConnect("your connection string")){
 This will buffer the datareader into memory (use with caution on large result sets). Under the hood [FastMember](https://github.com/mgravell/fast-member) is being used for conversion.
 
 ```c#
-using(var db = new DbConnect("your connection string")){
+using(var db = new SqlConnection("your connection string")){
     var someObjects = db.Execute<SomeObject>("dbo.someSproc", new { param1 = "yayAParam" });
 }
 
 //async
-using(var db = new DbConnect("your connection string")){
+using(var db = new SqlConnection("your connection string")){
     var someObjects = await db.ExecuteAsync<SomeObject>("dbo.someSproc", new { param1 = "yayAParam" });
 }
 ```
@@ -60,7 +62,7 @@ This approach is useful for dealing with multiple result sets, or if you need to
 Note that `Read<T>()` and `ReadAsync<T>()` are optional, you are entirely free to use and manipulate the reader as needed.
 
 ```c#
-using(var db = new DbConnect("your connection string")){
+using(var db = new SqlConnection("your connection string")){
     using(var rd = db.Reader("dbo.someSproc", new { param1 = "yayAParam" })){
         var someObjects = rd.Read<SomeObject>();
         var someOtherObjects = rd.Read<SomeOtherObject>();
@@ -68,7 +70,7 @@ using(var db = new DbConnect("your connection string")){
 }
 
 //async
-using(var db = new DbConnect("your connection string")){
+using(var db = new SqlConnection("your connection string")){
     using(var rd = await db.ReaderAsync("dbo.someSproc", new { param1 = "yayAParam" })){
         var someObjects = await rd.ReadAsync<SomeObject>();
         var someOtherObjects = await rd.ReadAsync<SomeOtherObject>();
@@ -82,12 +84,12 @@ Useful for copying large amounts of data from one database to another, or within
 
 ```c#
 IEnumerable<SomeObject> srcData = {your source data};
-using(var db = new DbConnect("your connection string")) {
+using(var db = new SqlConnection("your connection string")) {
     db.Bulk<SomeObject>(srcData, "dbo.SomeTable");
 }
 
 //async
-using(var db = new DbConnect("your connection string")) {
+using(var db = new SqlConnection("your connection string")) {
     await db.BulkAsync<SomeObject>(srcData, "dbo.SomeTable");
 }
 ```
@@ -158,7 +160,7 @@ Accessing output parameters is done in "callback" (`Action<SqlCommand`) fashion.
 > Note that this functionality is only exposed in the `Execute` and `ExecuteAsync` methods.
 
 ```c#
-using(var db = new DbConnect("your connection string")){
+using(var db = new SqlConnection("your connection string")){
     string outputParam1 = string.Empty;
     var dbParams = new DbParams();
     dbParams.Add("param1", "yayAParam");
@@ -178,7 +180,7 @@ using(var db = new DbConnect("your connection string")){
 DbConnect has full support for transactions and exposes two helper methods to kick them off: `BeginTransaction` and `BeginTransactionAsync`. 
 
 ```c#
-using(var db = new DbConnect("your connection string")){
+using(var db = new SqlConnection("your connection string")){
     var trans = db.BeginTransaction();
     
     var cmd = new SqlCommandBuilder().CreateCommand("insert into dbo.SomeTable(someCol) values (1)")
@@ -198,7 +200,7 @@ using(var db = new DbConnect("your connection string")){
 }
 
 ///async
-using(var db = new DbConnect("your connection string")){
+using(var db = new SqlConnection("your connection string")){
     var trans = await db.BeginTransactionAsync();
     
     var cmd = new SqlCommandBuilder().CreateCommand("insert into dbo.SomeTable(someCol) values (1)")
