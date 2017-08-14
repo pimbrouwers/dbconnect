@@ -4,11 +4,18 @@
     <TargetFramework>netstandard1.6</TargetFramework>
     <AssemblyName>Cinch.DbConnect</AssemblyName>
     <RootNamespace>Cinch.DbConnect</RootNamespace>
+    <Version>1.0.2</Version>
+    <Authors>pimbrouwers</Authors>
+    <Company />
+    <Description>Set of tiny, performant extension methods for SqlConnection, SqlCommand, SqlDataReader and SqlBulkCopy with a fluent api for building both SqlCommands and SqlBulkCopy routines.</Description>
+    <PackageProjectUrl>https://github.com/pimbrouwers/DbConnect</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/pimbrouwers/DbConnect</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>ado.net orm async sql sqlcommand sqlconnection sqldatareader</PackageTags>
+    <PackageReleaseNotes>Migrated to extension method approach</PackageReleaseNotes>
+    <Copyright>2017</Copyright>
+    <PackageLicenseUrl>https://github.com/pimbrouwers/DbConnect/blob/master/LICENSE</PackageLicenseUrl>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Remove="DbConnect.cs" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="FastMember" Version="1.1.0" />
