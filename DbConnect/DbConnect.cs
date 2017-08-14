@@ -3,21 +3,19 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 
 namespace Cinch
-{    
+{
     public class DbConnect : IDisposable
-    { 
+    {
         SqlConnection conn;
         SqlCommand cmd;
         SqlTransaction trans;
-        
+
         public DbConnect(string connStr)
         {
-            conn = BuildConnection(connStr);
+            conn = new SqlConnection(connStr);
         }
 
         public void Dispose()
@@ -26,105 +24,196 @@ namespace Cinch
             cmd?.Dispose();
             trans?.Dispose();
         }
-        
-        public void Execute(string query, 
-                            object parameters = null, 
-                            DbParams dbParams = null, 
-                            CommandType commandType = CommandType.StoredProcedure, 
-                            int commandTimeout = 30, 
-                            SqlTransaction transaction = null, 
-                            Action<SqlCommand> afterExecution = null)
-        {
-            Open();
 
-            using (cmd = BuildCommand(conn, query, commandType, commandTimeout, parameters, dbParams, transaction))
+        #region Helpers
+        public void Execute(string query, object parameters = null, CommandType commandType = CommandType.StoredProcedure)
+        {
+            var cmdBuilder = new SqlCommandBuilder().CreateCommand(query)
+                                                    .WithParameters(parameters)
+                                                    .SetCommandType(commandType);
+
+            this.Execute(cmdBuilder);
+        }
+
+        public async Task ExecuteAsync(string query, object parameters = null, CommandType commandType = CommandType.StoredProcedure)
+        {
+            var cmdBuilder = new SqlCommandBuilder().CreateCommand(query)
+                                                    .WithParameters(parameters)
+                                                    .SetCommandType(commandType);
+
+            await this.ExecuteAsync(cmdBuilder);
+        }
+
+        public IEnumerable<T> Execute<T>(string query, object parameters = null, CommandType commandType = CommandType.StoredProcedure)
+        {
+            var cmdBuilder = new SqlCommandBuilder().CreateCommand(query)
+                                                    .WithParameters(parameters)
+                                                    .SetCommandType(commandType);
+
+            return this.Execute<T>(cmdBuilder);
+        }
+
+        public async Task<IEnumerable<T>> ExecuteAsync<T>(string query, object parameters = null, CommandType commandType = CommandType.StoredProcedure)
+        {
+            var cmdBuilder = new SqlCommandBuilder().CreateCommand(query)
+                                                    .WithParameters(parameters)
+                                                    .SetCommandType(commandType);
+
+            return await this.ExecuteAsync<T>(cmdBuilder);
+        }
+
+        public SqlDataReader Reader(string query, object parameters = null, CommandType commandType = CommandType.StoredProcedure)
+        {
+            var cmdBuilder = new SqlCommandBuilder().CreateCommand(query)
+                                                    .WithParameters(parameters)
+                                                    .SetCommandType(commandType);
+
+            return this.Reader(cmdBuilder);
+        }
+
+        public async Task<SqlDataReader> ReaderAsync(string query, object parameters = null, CommandType commandType = CommandType.StoredProcedure)
+        {
+            var cmdBuilder = new SqlCommandBuilder().CreateCommand(query)
+                                                    .WithParameters(parameters)
+                                                    .SetCommandType(commandType);
+
+            return await this.ReaderAsync(cmdBuilder);
+        }
+
+        public void Bulk<T>(IEnumerable<T> srcData, string destinationTableName) where T : class, new()
+        {
+            var bcpBuilder = new SqlBulkCopyBuilder().CreateBcp(destinationTableName);
+
+            this.Bulk<T>(bcpBuilder, srcData);
+        }
+
+        public async Task BulkAsync<T>(IEnumerable<T> srcData, string destinationTableName) where T : class, new()
+        {
+            var bcpBuilder = new SqlBulkCopyBuilder().CreateBcp(destinationTableName);
+
+            await this.BulkAsync<T>(bcpBuilder, srcData);
+        }
+        #endregion
+
+        #region Commands
+        public void Execute(SqlCommandBuilder cmdBuilder, Action<SqlCommand> afterExecution = null)
+        {
+            using (cmd = cmdBuilder.SetConnection(conn))
             {
+                cmd.Connection.OpenConnection();
                 cmd.ExecuteNonQuery();
 
                 afterExecution?.Invoke(cmd);
             }
         }
 
-        public IEnumerable<T> Execute<T>(string query, object parameters = null, DbParams dbParams = null, CommandType commandType = CommandType.StoredProcedure, int commandTimeout = 30, SqlTransaction transaction = null)
+        public async Task ExecuteAsync(SqlCommandBuilder cmdBuilder, Action<SqlCommand> afterExecution = null)
         {
-            Open();
-            
-            using (cmd = BuildCommand(conn, query, commandType, commandTimeout, parameters, dbParams, transaction))
-            using (var rd = cmd.GetReader())
+            using (cmd = cmdBuilder.SetConnection(conn))
             {
-                while (rd.Read())
-                    yield return rd.ConvertTo<T>();
+                await cmd.Connection.OpenConnectionAsync();
+                await cmd.ExecuteNonQueryAsync();
+
+                afterExecution?.Invoke(cmd);
+            }
+        }
+        #endregion
+
+        #region Queries
+        public IEnumerable<T> Execute<T>(SqlCommandBuilder cmdBuilder)
+        {
+            using (cmd = cmdBuilder.SetConnection(conn))
+            {
+                cmd.Connection.OpenConnection();
+
+                using (var rd = cmd.GetReader())
+                {
+                    return rd.Read<T>();
+                }
             }
         }
 
-        public SqlDataReader Reader(string query, object parameters = null, DbParams dbParams = null, CommandType commandType = CommandType.StoredProcedure, int commandTimeout = 30, SqlTransaction transaction = null)
+        public async Task<IEnumerable<T>> ExecuteAsync<T>(SqlCommandBuilder cmdBuilder)
         {
-            Open();
-            
-            cmd = BuildCommand(conn, query, commandType, commandTimeout, parameters, dbParams, transaction);
+            using (cmd = cmdBuilder.SetConnection(conn))
+            {
+                await cmd.Connection.OpenConnectionAsync();
+
+                using (var rd = await cmd.GetReaderAsync())
+                {
+                    return await rd.ReadAsync<T>();
+                }
+            }
+        }
+        #endregion
+
+        #region Reader
+        public SqlDataReader Reader(SqlCommandBuilder cmdBuilder)
+        {
+            cmd = cmdBuilder.SetConnection(conn);
+
+            cmd.Connection.OpenConnection();
 
             return cmd.GetReader();
         }
-        
-        public void Bulk<T>(SqlDataReader rd, string destinationTableName, int batchSize = 5000, int bulkCopyTimeout = 30, IEnumerable<string> ignoreCols = null, SqlBulkCopyOptions sqlBulkCopyOptions = SqlBulkCopyOptions.Default, SqlTransaction transaction = null) where T : class, new()
-        {
-            Open();
 
-            using (var bcp = BuildBulkCopy(conn, sqlBulkCopyOptions, transaction))
-            using (var dataReader = ObjectReader.Create(rd.Read<T>()))
-            {                
+        public async Task<SqlDataReader> ReaderAsync(SqlCommandBuilder cmdBuilder)
+        {
+            cmd = cmdBuilder.SetConnection(conn);
+
+            await cmd.Connection.OpenConnectionAsync();
+
+            return await cmd.GetReaderAsync();
+        }
+        #endregion
+
+        #region Bulk Copy
+        public void Bulk<T>(SqlBulkCopyBuilder bcpBuilder, IEnumerable<T> srcData, IEnumerable<string> ignoreCols = null) where T : class, new()
+        {
+            conn.OpenConnection();
+
+            using (SqlBulkCopy bcp = bcpBuilder.SetConnection(conn))
+            {
                 bcp.MapColumns<T>(ignoreCols);
 
-                bcp.DestinationTableName = destinationTableName;
-                bcp.BatchSize = batchSize;
-                bcp.BulkCopyTimeout = bulkCopyTimeout;
-                
-                bcp.WriteToServer(dataReader);
+                using (var dataReader = ObjectReader.Create(srcData))
+                {
+                    bcp.WriteToServer(dataReader);
+                }
             }
         }
 
+        public async Task BulkAsync<T>(SqlBulkCopyBuilder bcpBuilder, IEnumerable<T> srcData, IEnumerable<string> ignoreCols = null) where T : class, new()
+        {
+            await conn.OpenConnectionAsync();
+
+            using (SqlBulkCopy bcp = bcpBuilder.SetConnection(conn))
+            {
+                bcp.MapColumns<T>(ignoreCols);
+
+                using (var dataReader = ObjectReader.Create(srcData))
+                {
+                    await bcp.WriteToServerAsync(dataReader);
+                }
+            }
+        }
+        #endregion
+
         public SqlTransaction BeginTransaction()
         {
-            Open();
+            conn.OpenConnection();
 
             trans = conn.BeginTransaction();
             return trans;
         }
 
-        private SqlBulkCopy BuildBulkCopy(SqlConnection conn, SqlBulkCopyOptions sqlBulkCopyOptions, SqlTransaction transaction = null)
+        public async Task<SqlTransaction> BeginTransactionAsync()
         {
-            return new SqlBulkCopy(conn, sqlBulkCopyOptions, transaction);
+            await conn.OpenConnectionAsync();
+
+            trans = conn.BeginTransaction();
+            return trans;
         }
-
-        private SqlCommand BuildCommand(SqlConnection conn, string query, CommandType commandType, int commandTimeout, object parameters = null, DbParams dbParams = null, SqlTransaction transaction = null)
-        {
-            var command = new SqlCommand(query, conn) { CommandTimeout = commandTimeout, CommandType = commandType };
-
-            if (parameters != null)
-                command.MapParameters(parameters);
-            else if (dbParams != null)
-                command.AddDbParams(dbParams);
-
-            if(transaction != null)
-            {
-                command.Transaction = transaction;
-            }            
-
-            return command;
-        }
-        
-        private SqlConnection BuildConnection(string connectionString)
-        {
-            conn = new SqlConnection(connectionString);
-            
-            return conn;
-        }
-
-        private void Open()
-        {
-            if (conn.State == ConnectionState.Closed)
-                conn.Open();
-        }        
     }
-    
+
 }

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace Cinch
 {
@@ -61,6 +62,18 @@ namespace Cinch
                 yield return rd.ConvertTo<T>();
 
             rd.NextResult();
+        }
+
+        public static async Task<IEnumerable<T>> ReadAsync<T>(this SqlDataReader rd)
+        {
+            var lst = new List<T>();
+
+            while (await rd.ReadAsync())
+                lst.Add(rd.ConvertTo<T>());
+
+            rd.NextResult();
+
+            return lst;
         }
     }
 }

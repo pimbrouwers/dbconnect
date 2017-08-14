@@ -2,6 +2,7 @@
 using System;
 using System.Data;
 using System.Data.SqlClient;
+using System.Threading.Tasks;
 
 namespace Cinch
 {
@@ -11,10 +12,20 @@ namespace Cinch
         {
             if (cmd.Connection.State != ConnectionState.Open)
             {
-                cmd.Connection.Open();
+                cmd.Connection.OpenConnection();
             }
 
             return cmd?.ExecuteReader();
+        }
+
+        public static async Task<SqlDataReader> GetReaderAsync(this SqlCommand cmd)
+        {
+            if (cmd.Connection.State != ConnectionState.Open)
+            {
+                await cmd.Connection.OpenConnectionAsync();
+            }
+
+            return await cmd?.ExecuteReaderAsync();
         }
 
         public static void AddDbParams(this SqlCommand cmd, DbParams dbParams)
