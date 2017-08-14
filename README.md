@@ -59,7 +59,7 @@ using(var db = new SqlConnection("your connection string")){
 
 This approach is useful for dealing with multiple result sets, or if you need to work with an unbuffered data reader (usually only needed when the record count or data volume is high).
 
-> Note that `Reader(...)` returns an instance of `DbReader` which is simply an object to encapsulate the underlying `SqlCommand` and `SqlDataReader`. It's purpose is to provide a clean interface and handle dispoal, allowing for use within a `using() { ... }` statement.
+> Note that `Reader(...)` returns an instance of `DbReader` which is simply an object to encapsulate the underlying `SqlCommand` and `SqlDataReader`. It's purpose is to provide a clean interface and handle disposal, allowing for use within a `using() { ... }` statement.
 
 > Note that `Read<T>()` and `ReadAsync<T>()` are optional, you are entirely free to use and manipulate the reader as needed.
 
