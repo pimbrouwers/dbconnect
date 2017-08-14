@@ -19,7 +19,7 @@ By default DbConnect assumes you're calling Stored Procedures (because why would
 3. SqlDataReader (useful for multiple result sets)
 4. Bulk Copy
 
-Helper methods for 1-3 are available, and a fluent interface (`SqlCommandBuilder`) is available for more complex configurations. 
+Helper methods for 1-3 are available, and a fluent interface (`SqlCommandBuilder` or `SqlBulkCopyBuilder`) is available for more complex configurations. 
 ### Helpers
 These helper methods expose the:
 
