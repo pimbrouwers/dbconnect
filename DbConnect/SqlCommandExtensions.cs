@@ -4,7 +4,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
 
-namespace Cinch
+namespace Cinch.DbConnect
 {
     public static class SqlCommandExtensions
     {

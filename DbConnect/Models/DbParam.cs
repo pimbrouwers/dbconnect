@@ -2,11 +2,20 @@
 using System.Collections.Generic;
 using System.Data;
 
-namespace Cinch
+namespace Cinch.DbConnect
 {
-    public class DbParams
+    public interface IDbParams
     {
-        public IList<DbParam> Parameters { get; set; }
+        IList<IDbParam> Parameters { get; set; }
+
+        void Add(string name, object value, SqlDbType? dbType = null);
+        void AddOutput(string name, SqlDbType dbType, int? size = null);
+        void Add(IDbParam p);
+    }
+
+    public class DbParams : IDbParams
+    {
+        public IList<IDbParam> Parameters { get; set; }
 
         public void Add(string name, object value, SqlDbType? dbType = null)
         {
@@ -22,16 +31,25 @@ namespace Cinch
             Add(p);
         }
         
-        public void Add(DbParam p)
+        public void Add(IDbParam p)
         {
             if (Parameters == null)
-                Parameters = new List<DbParam>();
+                Parameters = new List<IDbParam>();
 
             Parameters.Add(p);
         }
     }
 
-    public class DbParam
+    public interface IDbParam
+    {
+        string Name { get; set; }
+        object Value { get; set; }
+        SqlDbType? DbType { get; set; }
+        ParameterDirection ParameterDirection { get; set; }
+        int? Size { get; set; }
+    }
+
+    public class DbParam : IDbParam
     {
         public string Name { get; set; }
         public object Value { get; set; }

@@ -3,11 +3,16 @@
   <PropertyGroup>
     <TargetFramework>netstandard1.6</TargetFramework>
     <AssemblyName>Cinch.DbConnect</AssemblyName>
-    <RootNamespace>Cinch</RootNamespace>
+    <RootNamespace>Cinch.DbConnect</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="DbConnect.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="FastMember" Version="1.1.0" />
+    <PackageReference Include="System.Data.Common" Version="4.3.0" />
   </ItemGroup>
 
 </Project>

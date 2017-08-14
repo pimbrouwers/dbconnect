@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Data.SqlClient;
 
-namespace Cinch
+namespace Cinch.DbConnect
 {
     public class SqlBulkCopyBuilder
     {
@@ -14,13 +14,13 @@ namespace Cinch
         SqlTransaction transaction;
 
         // CONVERSION OPERATOR
-        public static implicit operator SqlBulkCopy(SqlBulkCopyBuilder bld)
+        public SqlBulkCopy Build ()
         {
-            var bcp = new SqlBulkCopy(bld.conn, bld.sqlBulkCopyOptions, bld.transaction);
+            var bcp = new SqlBulkCopy(this.conn, this.sqlBulkCopyOptions, this.transaction);
 
-            bcp.DestinationTableName = bld.destinationTableName;
-            bcp.BatchSize = bld.batchSize;
-            bcp.BulkCopyTimeout = bld.bulkCopyTimeout;
+            bcp.DestinationTableName = this.destinationTableName;
+            bcp.BatchSize = this.batchSize;
+            bcp.BulkCopyTimeout = this.bulkCopyTimeout;
 
             return bcp;
         }

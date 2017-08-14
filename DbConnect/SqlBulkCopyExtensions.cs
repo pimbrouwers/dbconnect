@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 
-namespace Cinch
+namespace Cinch.DbConnect
 {
     public static class SqlBulkCopyExtensions
     {

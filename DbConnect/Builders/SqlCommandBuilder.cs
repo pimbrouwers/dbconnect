@@ -2,7 +2,7 @@
 using System.Data;
 using System.Data.SqlClient;
 
-namespace Cinch
+namespace Cinch.DbConnect
 {
     public class SqlCommandBuilder
     {
@@ -14,22 +14,21 @@ namespace Cinch
         DbParams dbParams;
         SqlTransaction transaction;
         
-        // CONVERSION OPERATOR
-        public static implicit operator SqlCommand(SqlCommandBuilder bld)
+        public SqlCommand Build()
         {
-            var command = new SqlCommand(bld.query, bld.conn) {
-                CommandTimeout = bld.commandTimeout,
-                CommandType = bld.commandType
+            var command = new SqlCommand(this.query, this.conn) {
+                CommandTimeout = this.commandTimeout,
+                CommandType = this.commandType
             };
 
-            if (bld.parameters != null)
-                command.MapParameters(bld.parameters);
-            else if (bld.dbParams != null)
-                command.AddDbParams(bld.dbParams);
+            if (this.parameters != null)
+                command.MapParameters(this.parameters);
+            else if (this.dbParams != null)
+                command.AddDbParams(this.dbParams);
 
-            if (bld.transaction != null)
+            if (this.transaction != null)
             {
-                command.Transaction = bld.transaction;
+                command.Transaction = this.transaction;
             }
 
             return command;
