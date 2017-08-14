@@ -25,7 +25,7 @@ These helper methods expose the:
 
 - `string query`
 - `object parameters` (optional)
-- `CommandType commandType` (optional)- 
+- `CommandType commandType` (optional)
 
 #### Command (no results)
 
@@ -63,21 +63,21 @@ This approach is useful for dealing with multiple result sets, or if you need to
 
 > Note that `Reader(...)` returns an instance of `DbReader` which is simply an object to encapsulate the underlying `SqlCommand` and `SqlDataReader`. It's purpose is to provide a clean interface and handle disposal, allowing for use within a `using() { ... }` statement.
 
-> Note that `Read<T>()` and `ReadAsync<T>()` are optional, you are entirely free to use and manipulate the reader as needed.
+> Note that `Enumerate<T>()` and `EnumerateAsync<T>()` are optional, you are entirely free to use and manipulate the reader as needed.
 
 ```c#
 using(var db = new SqlConnection("your connection string")){
     using(var rd = db.Reader("dbo.someSproc", new { param1 = "yayAParam" })){
-        var someObjects = rd.Read<SomeObject>();
-        var someOtherObjects = rd.Read<SomeOtherObject>();
+        var someObjects = rd.Enumerate<SomeObject>();
+        var someOtherObjects = rd.Enumerate<SomeOtherObject>();
     }
 }
 
 //async
 using(var db = new SqlConnection("your connection string")){
     using(var rd = await db.ReaderAsync("dbo.someSproc", new { param1 = "yayAParam" })){
-        var someObjects = await rd.ReadAsync<SomeObject>();
-        var someOtherObjects = await rd.ReadAsync<SomeOtherObject>();
+        var someObjects = await rd.EnumerateAsync<SomeObject>();
+        var someOtherObjects = await rd.EnumerateAsync<SomeOtherObject>();
     }
 }
 ```
