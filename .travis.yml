@@ -1,9 +1,5 @@
 sudo: false
 language: csharp
 solution: Cinch.sln
-
-install:
-  - nuget restore ./Cinch.sln
-   
-script:
-  - xbuild /p:Configuration=Release ./Cinch.sln
+mono:
+  - 4.6.0
