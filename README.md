@@ -13,46 +13,44 @@ Install using nuget:
 `Install-Package Cinch.DbConnect`
 
 By default DbConnect assumes you're calling Stored Procedures (because why wouldn't you? am I right?!). But this is entirely configurable at runtime. At it's core DbConnect offers four execution pathways:
-1. Command (no results)
-2. Query (single result set, buffers into memory)
-3. SqlDataReader (useful for multiple result sets)
+1. Execute (no results)
+2. Enumerate (single result set, returns an `IDbEnumerator`)
+3. Reader (useful for multiple result sets, returns an `IDbReader`)
 4. Bulk Copy
 
-Helper methods for 1-3 are available, and a fluent interface (`SqlCommandBuilder` or `SqlBulkCopyBuilder`) is available for more complex configurations. 
 ### Helpers
-These helper methods expose the:
+With a class aptly named `DbConnect` are a collection of static helper methods for `Execute`, `Enumerate` and `Reader`. These methods will broker the `SqlConnection` and construct the `SqlCommand` on your behalf. All methods accept the following parameters:
 
+- `string connStr`
 - `string query`
-- `object parameters` (optional)
-- `CommandType commandType` (optional)
+- `object parameters = null` (optional)
+- `CommandType commandType = CommandType.StoredProcedure` (optional)
 
-#### Command (no results)
+#### Execute (no results)
 
 ```c#
-using(var db = new SqlConnection("your connection string")){
-    db.Execute("dbo.someSproc", new { param1 = "yayAParam" }); //stored procedure
-    db.Execute("select top 100 from dbo.SomeTable where someCol = @param1", new { param1 = "yayAParam" }, CommandType.Text); //inline
-}
+DbConnect.Execute("your connection string", "dbo.someSproc", new { param1 = "yayAParam" });
 
 //async
-using(var db = new SqlConnection("your connection string")){
-    await db.ExecuteAsync("dbo.someSproc", new { param1 = "yayAParam" }); //stored procedure
-    await db.ExecuteAsync("select top 100 from dbo.SomeTable", commandType: CommandType.Text); //inline
-}
+await DbConnect.ExecuteAsync("your connection string", "dbo.someSproc", new { param1 = "yayAParam" });
 ```
 
-#### Queries (single result set)
-
-This will buffer the datareader into memory (use with caution on large result sets). Under the hood [FastMember](https://github.com/mgravell/fast-member) is being used for conversion.
+#### Enumerate (single result set)
 
 ```c#
-using(var db = new SqlConnection("your connection string")){
-    var someObjects = db.Execute<SomeObject>("dbo.someSproc", new { param1 = "yayAParam" });
+using(var someObjects = DbConnect.Enumerate<SomeObject>("your connection string", "dbo.someSproc", new { param1 = "yayAParam" })){
+    foreach(var someObject in someObjects)
+    {
+        //work with someObject
+    }
 }
 
 //async
-using(var db = new SqlConnection("your connection string")){
-    var someObjects = await db.ExecuteAsync<SomeObject>("dbo.someSproc", new { param1 = "yayAParam" });
+using(var someObjects = await DbConnect.EnumerateAsync<SomeObject>("your connection string", "dbo.someSproc", new { param1 = "yayAParam" })){
+    foreach(var someObject in someObjects)
+    {
+        //work with someObject
+    }
 }
 ```
 
@@ -60,24 +58,20 @@ using(var db = new SqlConnection("your connection string")){
 
 This approach is useful for dealing with multiple result sets, or if you need to work with an unbuffered data reader (usually only needed when the record count or data volume is high).
 
-> Note that `Reader(...)` returns an instance of `DbReader` which is simply an object to encapsulate the underlying `SqlCommand` and `SqlDataReader`. It's purpose is to provide a clean interface and handle disposal, allowing for use within a `using() { ... }` statement.
+> Note that `Reader(...)` returns an instance of `IDbReader` which is simply an object to encapsulate the underlying `IDbCommand` and `IDataReader`. It's purpose is to provide a clean interface and handle disposal, allowing for use within a `using() { ... }` statement.
 
-> Note that `Enumerate<T>()` and `EnumerateAsync<T>()` are optional, you are entirely free to use and manipulate the reader as needed.
+> Note that `Enumerate<T>()` and `EnumerateAsync<T>()` are optional, you are entirely free to use and manipulate the reader as needed. You can access the encapsulated `IDataReader` using `IDbReader.GetIDataReader()`.
 
 ```c#
-using(var db = new SqlConnection("your connection string")){
-    using(var rd = db.Reader("dbo.someSproc", new { param1 = "yayAParam" })){
-        var someObjects = rd.Enumerate<SomeObject>();
-        var someOtherObjects = rd.Enumerate<SomeOtherObject>();
-    }
+using(var rd = DbConnect.Reader("your connection string", "dbo.someSproc", new { param1 = "yayAParam" })){
+    var someObjects = rd.Enumerate<SomeObject>();
+    var someOtherObjects = rd.Enumerate<SomeOtherObject>();
 }
 
 //async
-using(var db = new SqlConnection("your connection string")){
-    using(var rd = await db.ReaderAsync("dbo.someSproc", new { param1 = "yayAParam" })){
-        var someObjects = await rd.EnumerateAsync<SomeObject>();
-        var someOtherObjects = await rd.EnumerateAsync<SomeOtherObject>();
-    }
+using(var rd = await DbConnect.ReaderAsync("your connection string", "dbo.someSproc", new { param1 = "yayAParam" })){
+    var someObjects = rd.Enumerate<SomeObject>();
+    var someOtherObjects = rd.Enumerate<SomeOtherObject>();
 }
 ```
 
@@ -113,14 +107,14 @@ var cmd = new SqlCommandBuilder().CreateCommand("dbo.someProc")
 `Execute`, `Execute<T>`, and `Reader` (including there `async` counterparts) can all accept `SqlCommandBuilder` as there first method parameter.
 
 ```c#
- public void Execute(SqlCommandBuilder cmdBuilder, Action<SqlCommand> afterExecution = null) { ... }
- public async Task ExecuteAsync(SqlCommandBuilder cmdBuilder, Action<SqlCommand> afterExecution = null) { ... }
+ public void Execute(ISqlCommandBuilder cmdBuilder, Action<SqlCommand> afterExecution = null) { ... }
+ public async Task ExecuteAsync(ISqlCommandBuilder cmdBuilder, Action<SqlCommand> afterExecution = null) { ... }
  
- public IEnumerable<T> Execute<T>(SqlCommandBuilder cmdBuilder) { ... }
- public async Task<IEnumerable<T>> ExecuteAsync<T>(SqlCommandBuilder cmdBuilder) { ... }
+ public IDbEnumerator<T> Enumerate<T>(ISqlCommandBuilder cmdBuilder) { ... }
+ public async Task<IDbEnumerator<T>> EnumerateAsync<T>(ISqlCommandBuilder cmdBuilder) { ... }
  
- public SqlDataReader Reader(SqlCommandBuilder cmdBuilder) { ... }
- public async Task<SqlDataReader> ReaderAsync(SqlCommandBuilder cmdBuilder) { ... }
+ public IDbReader Reader(ISqlCommandBuilder cmdBuilder) { ... }
+ public async Task<IDbReader> ReaderAsync(ISqlCommandBuilder cmdBuilder) { ... }
 ```
 
 ## SqlBulkCopyBuilder
