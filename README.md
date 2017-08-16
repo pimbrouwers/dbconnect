@@ -25,6 +25,7 @@ With a class aptly named `DbConnect` are a collection of static helper methods f
 - `string query`
 - `object parameters = null` (optional)
 - `CommandType commandType = CommandType.StoredProcedure` (optional)
+- `int commandTimeout = 30` (optional)
 
 #### Execute (no results)
 
