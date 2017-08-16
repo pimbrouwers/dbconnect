@@ -4,14 +4,25 @@ using System.Data.SqlClient;
 
 namespace Cinch.DbConnect
 {
-    public class SqlCommandBuilder
+    public interface ISqlCommandBuilder {
+        SqlCommand Build();
+        ISqlCommandBuilder CreateCommand(string query);
+        ISqlCommandBuilder SetConnection(SqlConnection conn);
+        ISqlCommandBuilder SetCommandType(CommandType commandType);
+        ISqlCommandBuilder SetCommandTimeout(int commandTimeout);
+        ISqlCommandBuilder WithParameters(object parameters);
+        ISqlCommandBuilder WithDbParams(IDbParams dbParams);
+        ISqlCommandBuilder UsingTransaction(SqlTransaction transaction);
+    }
+
+    public class SqlCommandBuilder : ISqlCommandBuilder
     {
         SqlConnection conn;
         string query;        
         int commandTimeout;
-        CommandType commandType;
+        CommandType commandType = CommandType.StoredProcedure;
         object parameters;
-        DbParams dbParams;
+        IDbParams dbParams;
         SqlTransaction transaction;
         
         public SqlCommand Build()
@@ -33,46 +44,46 @@ namespace Cinch.DbConnect
 
             return command;
         }
-
-        public SqlCommandBuilder CreateCommand(string query)
+        
+        public ISqlCommandBuilder CreateCommand(string query)
         {
             this.query = query;
             return this;
         }
 
-        public SqlCommandBuilder SetConnection(SqlConnection conn)
+        public ISqlCommandBuilder SetConnection(SqlConnection conn)
         {
             if(this.conn == null)
                 this.conn = conn;
 
             return this;
         }
-
-        public SqlCommandBuilder SetCommandType(CommandType commandType)
+        
+        public ISqlCommandBuilder SetCommandType(CommandType commandType)
         {
             this.commandType = commandType;
             return this;
         }
 
-        public SqlCommandBuilder SetCommandTimeout(int commandTimeout)
+        public ISqlCommandBuilder SetCommandTimeout(int commandTimeout)
         {
             this.commandTimeout = commandTimeout;
             return this;
         }
         
-        public SqlCommandBuilder WithParameters(object parameters)
+        public ISqlCommandBuilder WithParameters(object parameters)
         {
             this.parameters = parameters;
             return this;
         }
 
-        public SqlCommandBuilder WithDbParams(DbParams dbParams)
+        public ISqlCommandBuilder WithDbParams(IDbParams dbParams)
         {
             this.dbParams = dbParams;
             return this;
         }
 
-        public SqlCommandBuilder UsingTransaction(SqlTransaction transaction)
+        public ISqlCommandBuilder UsingTransaction(SqlTransaction transaction)
         {
             this.transaction = transaction;
             return this;

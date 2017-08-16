@@ -21,7 +21,7 @@ namespace Cinch.DbConnect
                 await conn.OpenAsync();
         }
 
-        public static SqlTransaction BeginTransaction(this SqlConnection conn)
+        public static SqlTransaction BeginTrans(this SqlConnection conn)
         {
             conn.OpenConnection();
 
@@ -29,7 +29,7 @@ namespace Cinch.DbConnect
             return trans;
         }
 
-        public static async Task<SqlTransaction> BeginTransactionAsync(this SqlConnection conn)
+        public static async Task<SqlTransaction> BeginTransAsync(this SqlConnection conn)
         {
             await conn.OpenConnectionAsync();
 
@@ -37,84 +37,8 @@ namespace Cinch.DbConnect
             return trans;
         }
 
-        #region Helpers
-        public static void Execute(this SqlConnection conn, string query, object parameters = null, CommandType commandType = CommandType.StoredProcedure)
-        {
-            var cmdBuilder = new SqlCommandBuilder().CreateCommand(query)
-                                                    .SetConnection(conn)
-                                                    .WithParameters(parameters)
-                                                    .SetCommandType(commandType);
-
-            conn.Execute(cmdBuilder);
-        }
-
-        public static async Task ExecuteAsync(this SqlConnection conn, string query, object parameters = null, CommandType commandType = CommandType.StoredProcedure)
-        {
-            var cmdBuilder = new SqlCommandBuilder().CreateCommand(query)
-                                                    .SetConnection(conn)
-                                                    .WithParameters(parameters)
-                                                    .SetCommandType(commandType);
-
-            await conn.ExecuteAsync(cmdBuilder);
-        }
-
-        public static IEnumerable<T> Execute<T>(this SqlConnection conn, string query, object parameters = null, CommandType commandType = CommandType.StoredProcedure)
-        {
-            var cmdBuilder = new SqlCommandBuilder().CreateCommand(query)
-                                                    .SetConnection(conn)
-                                                    .WithParameters(parameters)
-                                                    .SetCommandType(commandType);
-
-            return conn.Execute<T>(cmdBuilder);
-        }
-
-        public static async Task<IEnumerable<T>> ExecuteAsync<T>(this SqlConnection conn, string query, object parameters = null, CommandType commandType = CommandType.StoredProcedure)
-        {
-            var cmdBuilder = new SqlCommandBuilder().CreateCommand(query)
-                                                    .SetConnection(conn)
-                                                    .WithParameters(parameters)
-                                                    .SetCommandType(commandType);
-
-            return await conn.ExecuteAsync<T>(cmdBuilder);
-        }
-
-        public static DbReader Reader(this SqlConnection conn, string query, object parameters = null, CommandType commandType = CommandType.StoredProcedure)
-        {
-            var cmdBuilder = new SqlCommandBuilder().CreateCommand(query)
-                                                    .SetConnection(conn)
-                                                    .WithParameters(parameters)
-                                                    .SetCommandType(commandType);
-
-            return conn.Reader(cmdBuilder);
-        }
-
-        public static async Task<DbReader> ReaderAsync(this SqlConnection conn, string query, object parameters = null, CommandType commandType = CommandType.StoredProcedure)
-        {
-            var cmdBuilder = new SqlCommandBuilder().CreateCommand(query)
-                                                    .SetConnection(conn)
-                                                    .WithParameters(parameters)
-                                                    .SetCommandType(commandType);
-
-            return await conn.ReaderAsync(cmdBuilder);
-        }
-
-        public static void Bulk<T>(this SqlConnection conn, IEnumerable<T> srcData, string destinationTableName) where T : class, new()
-        {
-            var bcpBuilder = new SqlBulkCopyBuilder().CreateBcp(destinationTableName);
-
-            conn.Bulk<T>(bcpBuilder, srcData);
-        }
-
-        public static async Task BulkAsync<T>(this SqlConnection conn, IEnumerable<T> srcData, string destinationTableName) where T : class, new()
-        {
-            var bcpBuilder = new SqlBulkCopyBuilder().CreateBcp(destinationTableName);
-
-            await conn.BulkAsync<T>(bcpBuilder, srcData);
-        }
-        #endregion
-
         #region Commands
-        public static void Execute(this SqlConnection conn, SqlCommandBuilder cmdBuilder, Action<SqlCommand> afterExecution = null)
+        public static void Execute(this SqlConnection conn, ISqlCommandBuilder cmdBuilder, Action<SqlCommand> afterExecution = null)
         {
             using (var cmd = cmdBuilder.SetConnection(conn).Build())
             {
@@ -125,7 +49,7 @@ namespace Cinch.DbConnect
             }
         }
 
-        public static async Task ExecuteAsync(this SqlConnection conn, SqlCommandBuilder cmdBuilder, Action<SqlCommand> afterExecution = null)
+        public static async Task ExecuteAsync(this SqlConnection conn, ISqlCommandBuilder cmdBuilder, Action<SqlCommand> afterExecution = null)
         {
             using (var cmd = cmdBuilder.SetConnection(conn).Build())
             {
@@ -138,47 +62,38 @@ namespace Cinch.DbConnect
         #endregion
 
         #region Queries
-        public static IEnumerable<T> Execute<T>(this SqlConnection conn, SqlCommandBuilder cmdBuilder)
+        public static IDbEnumerator<T> Enumerate<T>(this SqlConnection conn, ISqlCommandBuilder cmdBuilder)
         {
-            using (var cmd = cmdBuilder.SetConnection(conn).Build())
-            {
-                cmd.Connection.OpenConnection();
+            var dbReader = conn.Reader(cmdBuilder);
 
-                using (var rd = cmd.GetReader())
-                {
-                    return rd.Enumerate<T>();
-                }
-            }
+            return new DbEnumerator<T>(dbReader);
         }
 
-        public static async Task<IEnumerable<T>> ExecuteAsync<T>(this SqlConnection conn, SqlCommandBuilder cmdBuilder)
+        public static async Task<IDbEnumerator<T>> EnumerateAsync<T>(this SqlConnection conn, ISqlCommandBuilder cmdBuilder)
         {
-            using (var cmd = cmdBuilder.SetConnection(conn).Build())
-            {
-                await cmd.Connection.OpenConnectionAsync();
+            var dbReader = await conn.ReaderAsync(cmdBuilder);
 
-                using (var rd = await cmd.GetReaderAsync())
-                {
-                    return await rd.EnumerateAsync<T>();
-                }
-            }
+            return new DbEnumerator<T>(dbReader);
         }
         #endregion
 
         #region Reader
-        public static DbReader Reader(this SqlConnection conn, SqlCommandBuilder cmdBuilder)
+        public static IDbReader Reader(this SqlConnection conn, ISqlCommandBuilder cmdBuilder)
         {
-            var cmd = cmdBuilder.SetConnection(conn).Build();            
-            cmd.Connection.OpenConnection();
-
+            var cmd = cmdBuilder.SetConnection(conn)
+                                .Build()
+                                .OpenConnection();       
+            
             var rd = cmd.GetReader();
 
             return new DbReader(cmd, rd);
         }
 
-        public static async Task<DbReader> ReaderAsync(this SqlConnection conn, SqlCommandBuilder cmdBuilder)
+        public static async Task<IDbReader> ReaderAsync(this SqlConnection conn, ISqlCommandBuilder cmdBuilder)
         {
-            var cmd = cmdBuilder.SetConnection(conn).Build();
+            var cmd = cmdBuilder.SetConnection(conn)
+                                .Build();
+                                
             await cmd.Connection.OpenConnectionAsync();
 
             var rd = await cmd.GetReaderAsync();

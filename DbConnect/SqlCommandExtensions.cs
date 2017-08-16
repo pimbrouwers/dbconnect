@@ -28,7 +28,7 @@ namespace Cinch.DbConnect
             return await cmd?.ExecuteReaderAsync();
         }
 
-        public static void AddDbParams(this SqlCommand cmd, DbParams dbParams)
+        public static void AddDbParams(this SqlCommand cmd, IDbParams dbParams)
         {
             if (dbParams != null &&
                 dbParams.Parameters != null)
@@ -122,6 +122,20 @@ namespace Cinch.DbConnect
             }
         }
 
+        public static SqlCommand OpenConnection(this SqlCommand cmd)
+        {
+            cmd.Connection?.OpenConnection();
+
+            return cmd;
+        }
+
+        public static async Task<SqlCommand> OpenConnectionAsync(this SqlCommand cmd)
+        {
+            await cmd.Connection?.OpenConnectionAsync();
+
+            return cmd;
+        }
+
         private static SqlDbType GetSqlDbType(object paramValue)
         {            
             TypeCode typeCode = Convert.GetTypeCode(paramValue);
@@ -150,6 +164,8 @@ namespace Cinch.DbConnect
                     return SqlDbType.Decimal;
 
                 case TypeCode.Int16:
+                    return SqlDbType.SmallInt;
+
                 case TypeCode.Int32:
                     return SqlDbType.Int;
 
