@@ -1,9 +1,8 @@
-# DbConnect.NET
 [![Build Status](https://travis-ci.org/pimbrouwers/DbConnect.svg?branch=master)](https://travis-ci.org/pimbrouwers/DbConnect/)
 
-DbConnect is a tiny, performant abstraction encapsulating ADO.NET. The intention of the project, is to make accessing a SQL Server database much simpler, and less verbose (i.e. cinch-ier). 
+# DbConnect.NET
 
-You can think of DbConnect as useful set of extension methods for `SqlConnection`, `SqlCommand`, `SqlDataReader` and `SqlBulkCopy` with a fluent api for building both `SqlCommands` and `SqlBulkCopy` routines. 
+You can think of DbConnect as useful set of tiny, performant extension methods for `SqlConnection`, `SqlCommand`, `SqlDataReader` and `SqlBulkCopy` with a fluent api for building both `SqlCommands` and `SqlBulkCopy` routines. The intention of the project, is to make accessing a SQL Server database much simpler, and less verbose (i.e. cinch-ier). 
 
 DbConnect is compiled against .NET Standard 1.6, which provides support for both both **.NET Core >= 1.0** and **.NET Framework 4.6.1**. This project was heavily if not entirely inspired by my mentor [@joelvarty](https://github.com/joelvarty).
 
@@ -19,13 +18,13 @@ By default DbConnect assumes you're calling Stored Procedures (because why would
 3. SqlDataReader (useful for multiple result sets)
 4. Bulk Copy
 
-Helper methods for 1-3 are available, and a fluent interface (`SqlCommandBuilder`) is available for more complex configurations. 
+Helper methods for 1-3 are available, and a fluent interface (`SqlCommandBuilder` or `SqlBulkCopyBuilder`) is available for more complex configurations. 
 ### Helpers
 These helper methods expose the:
 
 - `string query`
 - `object parameters` (optional)
-- `CommandType commandType` (optional)- 
+- `CommandType commandType` (optional)
 
 #### Command (no results)
 
@@ -63,21 +62,21 @@ This approach is useful for dealing with multiple result sets, or if you need to
 
 > Note that `Reader(...)` returns an instance of `DbReader` which is simply an object to encapsulate the underlying `SqlCommand` and `SqlDataReader`. It's purpose is to provide a clean interface and handle disposal, allowing for use within a `using() { ... }` statement.
 
-> Note that `Read<T>()` and `ReadAsync<T>()` are optional, you are entirely free to use and manipulate the reader as needed.
+> Note that `Enumerate<T>()` and `EnumerateAsync<T>()` are optional, you are entirely free to use and manipulate the reader as needed.
 
 ```c#
 using(var db = new SqlConnection("your connection string")){
     using(var rd = db.Reader("dbo.someSproc", new { param1 = "yayAParam" })){
-        var someObjects = rd.Read<SomeObject>();
-        var someOtherObjects = rd.Read<SomeOtherObject>();
+        var someObjects = rd.Enumerate<SomeObject>();
+        var someOtherObjects = rd.Enumerate<SomeOtherObject>();
     }
 }
 
 //async
 using(var db = new SqlConnection("your connection string")){
     using(var rd = await db.ReaderAsync("dbo.someSproc", new { param1 = "yayAParam" })){
-        var someObjects = await rd.ReadAsync<SomeObject>();
-        var someOtherObjects = await rd.ReadAsync<SomeOtherObject>();
+        var someObjects = await rd.EnumerateAsync<SomeObject>();
+        var someOtherObjects = await rd.EnumerateAsync<SomeOtherObject>();
     }
 }
 ```
