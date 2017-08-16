@@ -49,5 +49,9 @@ namespace Cinch.DbConnect
             return rd.Enumerate<T>();
         }
         
+        public IDataReader GetIDataReader()
+        {
+            return rd;
+        }
     }
 }
