@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Cinch.DbConnect
@@ -49,6 +50,17 @@ namespace Cinch.DbConnect
             }
         }
 
+        public static T Execute<T>(this SqlConnection conn, ISqlCommandBuilder cmdBuilder, Action<SqlCommand> afterExecution = null)
+        {
+            using (var cmd = cmdBuilder.SetConnection(conn).Build())
+            using (var dbReader = cmd.GetReader())
+            {
+                afterExecution?.Invoke(cmd);
+
+                return dbReader.Enumerate<T>().FirstOrDefault();
+            }
+        }
+
         public static async Task ExecuteAsync(this SqlConnection conn, ISqlCommandBuilder cmdBuilder, Action<SqlCommand> afterExecution = null)
         {
             using (var cmd = cmdBuilder.SetConnection(conn).Build())
@@ -57,6 +69,17 @@ namespace Cinch.DbConnect
                 await cmd.ExecuteNonQueryAsync();
 
                 afterExecution?.Invoke(cmd);
+            }
+        }
+
+        public static async Task<T> ExecuteAsync<T>(this SqlConnection conn, ISqlCommandBuilder cmdBuilder, Action<SqlCommand> afterExecution = null)
+        {
+            using (var cmd = cmdBuilder.SetConnection(conn).Build())
+            using (var dbReader = await cmd.GetReaderAsync())
+            {
+                afterExecution?.Invoke(cmd);
+
+                return dbReader.Enumerate<T>().FirstOrDefault();
             }
         }
         #endregion

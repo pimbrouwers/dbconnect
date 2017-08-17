@@ -15,17 +15,17 @@ namespace Cinch.DbConnect
 
     public class DbReader : IDbReader
     {
-        IDbConnection conn;
-        IDbCommand cmd;
+        SqlConnection conn;
+        SqlCommand cmd;
         IDataReader rd;
 
-        public DbReader(IDbCommand cmd, IDataReader rd)
+        public DbReader(SqlCommand cmd, IDataReader rd)
         {            
             this.cmd = cmd;
             this.rd = rd;
         }
 
-        public DbReader(IDbCommand cmd, IDataReader rd, IDbConnection conn)
+        public DbReader(SqlCommand cmd, IDataReader rd, SqlConnection conn)
         {
             this.cmd = cmd;
             this.rd = rd;
