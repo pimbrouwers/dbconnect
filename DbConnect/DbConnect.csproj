@@ -4,7 +4,7 @@
     <TargetFramework>netstandard1.6</TargetFramework>
     <AssemblyName>Cinch.DbConnect</AssemblyName>
     <RootNamespace>Cinch.DbConnect</RootNamespace>
-    <Version>1.0.3</Version>
+    <Version>1.0.4</Version>
     <Authors>pimbrouwers</Authors>
     <Company />
     <Description>Set of tiny, performant extension methods for SqlConnection, SqlCommand, SqlDataReader and SqlBulkCopy with a fluent api for building both SqlCommands and SqlBulkCopy routines.</Description>
@@ -12,13 +12,15 @@
     <RepositoryUrl>https://github.com/pimbrouwers/DbConnect</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>ado.net orm async sql sqlcommand sqlconnection sqldatareader</PackageTags>
-    <PackageReleaseNotes>GetIDataReader added to DbReader
+    <PackageReleaseNotes>Extra helper methods added accepting SqlConnection as first param instead of connection string. Allows user to use helper methods while brokering their own connection.
 
-Added DbEnumerator
+Added return type extensions for Execute and Execute Async
 
-Moved helper methods to DbConnect</PackageReleaseNotes>
+Switched from interfaces to concreate classes in DbReader for clarity</PackageReleaseNotes>
     <Copyright>2017</Copyright>
     <PackageLicenseUrl>https://github.com/pimbrouwers/DbConnect/blob/master/LICENSE</PackageLicenseUrl>
+    <AssemblyVersion>1.0.4.0</AssemblyVersion>
+    <FileVersion>1.0.4.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
