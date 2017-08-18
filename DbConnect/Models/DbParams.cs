@@ -6,7 +6,7 @@ namespace Cinch.DbConnect
 {
     public interface IDbParams
     {
-        IList<IDbParam> Parameters { get; }
+        ISet<IDbParam> Parameters { get; }
 
         void Add(string name, object value, SqlDbType? dbType = null);
         void AddOutput(string name, SqlDbType dbType, int? size = null);
@@ -15,9 +15,9 @@ namespace Cinch.DbConnect
 
     public class DbParams : IDbParams
     {
-        IList<IDbParam> parameters;
+        ISet<IDbParam> parameters;
 
-        public IList<IDbParam> Parameters
+        public ISet<IDbParam> Parameters
         {
             get
             {
@@ -42,7 +42,7 @@ namespace Cinch.DbConnect
         public void Add(IDbParam p)
         {
             if (parameters == null)
-                parameters = new List<IDbParam>();
+                parameters = new HashSet<IDbParam>();
 
             parameters.Add(p);
         }

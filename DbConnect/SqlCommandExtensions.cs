@@ -66,7 +66,7 @@ namespace Cinch.DbConnect
         public static void AddParameter(this SqlCommand cmd, string name, object value)
         {
             if (value == null)
-                value = DBNull.Value;
+                throw new ArgumentNullException("SqlDbType cannot be inferred from a null value. Is this a nullable type? If so, the SqlDbType must be provided when adding the DbParam.");
 
             cmd.AddParameter(name, value, GetSqlDbType(value));
         }
