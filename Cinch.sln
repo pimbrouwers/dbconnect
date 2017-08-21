@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.14
+VisualStudioVersion = 15.0.26730.8
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DbConnect", "DbConnect\DbConnect.csproj", "{C80CE8CD-E970-4948-8C86-135067A386DA}"
 EndProject
@@ -11,12 +11,15 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{C80CE8CD-E970-4948-8C86-135067A386DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C80CE8CD-E970-4948-8C86-135067A386DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C80CE8CD-E970-4948-8C86-135067A386DA}.Debug|Any CPU.ActiveCfg = Release|Any CPU
+		{C80CE8CD-E970-4948-8C86-135067A386DA}.Debug|Any CPU.Build.0 = Release|Any CPU
 		{C80CE8CD-E970-4948-8C86-135067A386DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C80CE8CD-E970-4948-8C86-135067A386DA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {069E39A3-603D-4507-BE7F-6C8175DC2047}
 	EndGlobalSection
 EndGlobal

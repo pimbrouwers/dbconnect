@@ -10,9 +10,9 @@ using System.Threading.Tasks;
 namespace Cinch.DbConnect
 {
     
-    public static class IDataReaderExtensions
+    public static class SqlDataReaderExtensions
     {
-        public static T ConvertTo<T>(this IDataReader rd)
+        public static T ConvertTo<T>(this SqlDataReader rd)
         {
             Type type = typeof(T);
             bool isPrim = type.GetTypeInfo().IsValueType;
@@ -42,12 +42,27 @@ namespace Cinch.DbConnect
             return t;
         }
         
-        public static IEnumerable<T> Enumerate<T>(this IDataReader rd)
+        public static IEnumerable<T> Enumerate<T>(this SqlDataReader rd)
         {
+            var set = new HashSet<T>();
             while (rd.Read())
-                yield return rd.ConvertTo<T>();
+                set.Add(rd.ConvertTo<T>());
 
             rd.NextResult();
+
+            return set;
+        }
+
+        public static async Task<IEnumerable<T>> EnumerateAsync<T>(this SqlDataReader rd)
+        {
+            var set = new HashSet<T>();
+
+            while (await rd.ReadAsync())
+                set.Add(rd.ConvertTo<T>());
+
+            await rd.NextResultAsync();
+
+            return set;
         }
     }
 }

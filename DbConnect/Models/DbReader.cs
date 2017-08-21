@@ -11,30 +11,22 @@ namespace Cinch.DbConnect
     {
         T ConvertTo<T>();
         IEnumerable<T> Enumerate<T>();
+        Task<IEnumerable<T>> EnumerateAsync<T>();
     }
 
     public class DbReader : IDbReader
     {
-        SqlConnection conn;
         SqlCommand cmd;
-        IDataReader rd;
+        SqlDataReader rd;
 
-        public DbReader(SqlCommand cmd, IDataReader rd)
+        public DbReader(SqlCommand cmd, SqlDataReader rd)
         {            
             this.cmd = cmd;
             this.rd = rd;
         }
 
-        public DbReader(SqlCommand cmd, IDataReader rd, SqlConnection conn)
-        {
-            this.cmd = cmd;
-            this.rd = rd;
-            this.conn = conn;
-        }
-        
         public void Dispose()
         {
-            conn?.Dispose();
             cmd?.Dispose();
             rd?.Dispose();
         }
@@ -48,8 +40,13 @@ namespace Cinch.DbConnect
         {
             return rd.Enumerate<T>();
         }
-        
-        public IDataReader GetIDataReader()
+
+        public async Task<IEnumerable<T>> EnumerateAsync<T>()
+        {
+            return await rd.EnumerateAsync<T>();
+        }
+
+        public SqlDataReader GetSqlDataReader()
         {
             return rd;
         }

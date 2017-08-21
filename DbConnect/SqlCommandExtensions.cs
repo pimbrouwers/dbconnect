@@ -121,21 +121,7 @@ namespace Cinch.DbConnect
                 cmd.AddParameter(member.Name, objAccessor[member.Name]);
             }
         }
-
-        public static SqlCommand OpenConnection(this SqlCommand cmd)
-        {
-            cmd.Connection?.OpenConnection();
-
-            return cmd;
-        }
-
-        public static async Task<SqlCommand> OpenConnectionAsync(this SqlCommand cmd)
-        {
-            await cmd.Connection?.OpenConnectionAsync();
-
-            return cmd;
-        }
-
+        
         private static SqlDbType GetSqlDbType(object paramValue)
         {            
             TypeCode typeCode = Convert.GetTypeCode(paramValue);

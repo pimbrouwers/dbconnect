@@ -85,18 +85,20 @@ namespace Cinch.DbConnect
         #endregion
 
         #region Queries
-        public static IDbEnumerator<T> Enumerate<T>(this SqlConnection conn, ISqlCommandBuilder cmdBuilder)
+        public static IEnumerable<T> Enumerate<T>(this SqlConnection conn, ISqlCommandBuilder cmdBuilder)
         {
-            var dbReader = conn.Reader(cmdBuilder);
-
-            return new DbEnumerator<T>(dbReader);
+            using (var dbReader = conn.Reader(cmdBuilder))
+            {
+                return dbReader.Enumerate<T>();
+            }
         }
 
-        public static async Task<IDbEnumerator<T>> EnumerateAsync<T>(this SqlConnection conn, ISqlCommandBuilder cmdBuilder)
+        public static async Task<IEnumerable<T>> EnumerateAsync<T>(this SqlConnection conn, ISqlCommandBuilder cmdBuilder)
         {
-            var dbReader = await conn.ReaderAsync(cmdBuilder);
-
-            return new DbEnumerator<T>(dbReader);
+            using (var dbReader = await conn.ReaderAsync(cmdBuilder))
+            {
+                return await dbReader.EnumerateAsync<T>();
+            }
         }
         #endregion
 
@@ -104,8 +106,9 @@ namespace Cinch.DbConnect
         public static IDbReader Reader(this SqlConnection conn, ISqlCommandBuilder cmdBuilder)
         {
             var cmd = cmdBuilder.SetConnection(conn)
-                                .Build()
-                                .OpenConnection();       
+                                .Build();
+
+            cmd.Connection.OpenConnection();
             
             var rd = cmd.GetReader();
 
