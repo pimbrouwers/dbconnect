@@ -34,7 +34,8 @@ namespace Cinch.DbConnect
 
             if (this.parameters != null)
                 command.MapParameters(this.parameters);
-            else if (this.dbParams != null)
+            
+            if (this.dbParams != null)
                 command.AddDbParams(this.dbParams);
 
             if (this.transaction != null)

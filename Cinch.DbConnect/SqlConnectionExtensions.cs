@@ -39,15 +39,19 @@ namespace Cinch.DbConnect
         }
 
         #region Commands
-        public static void Execute(this SqlConnection conn, ISqlCommandBuilder cmdBuilder, Action<SqlCommand> afterExecution = null)
+        public static int Execute(this SqlConnection conn, ISqlCommandBuilder cmdBuilder, Action<SqlCommand> afterExecution = null)
         {
+            int recordsAffected = 0;
+
             using (var cmd = cmdBuilder.SetConnection(conn).Build())
             {
                 cmd.Connection.OpenConnection();
-                cmd.ExecuteNonQuery();
+                recordsAffected = cmd.ExecuteNonQuery();
 
                 afterExecution?.Invoke(cmd);
             }
+
+            return recordsAffected;
         }
 
         public static T Execute<T>(this SqlConnection conn, ISqlCommandBuilder cmdBuilder, Action<SqlCommand> afterExecution = null)
@@ -61,15 +65,19 @@ namespace Cinch.DbConnect
             }
         }
 
-        public static async Task ExecuteAsync(this SqlConnection conn, ISqlCommandBuilder cmdBuilder, Action<SqlCommand> afterExecution = null)
+        public static async Task<int> ExecuteAsync(this SqlConnection conn, ISqlCommandBuilder cmdBuilder, Action<SqlCommand> afterExecution = null)
         {
+            int recordsAffected = 0;
+
             using (var cmd = cmdBuilder.SetConnection(conn).Build())
             {
                 await cmd.Connection.OpenConnectionAsync();
-                await cmd.ExecuteNonQueryAsync();
+                recordsAffected = await cmd.ExecuteNonQueryAsync();
 
                 afterExecution?.Invoke(cmd);
             }
+
+            return recordsAffected;
         }
 
         public static async Task<T> ExecuteAsync<T>(this SqlConnection conn, ISqlCommandBuilder cmdBuilder, Action<SqlCommand> afterExecution = null)

@@ -9,14 +9,14 @@ namespace Cinch.DbConnect
 {
     public class DbConnect
     {
-        public static void Execute(string connStr, string query, object parameters = null, CommandType commandType = CommandType.StoredProcedure, int commandTimeout = 30)
+        public static int Execute(string connStr, string query, object parameters = null, CommandType commandType = CommandType.StoredProcedure, int commandTimeout = 30)
         {
             using (var conn = new SqlConnection(connStr))
             {
-                Execute(conn, query, parameters, commandType, commandTimeout);
+                return Execute(conn, query, parameters, commandType, commandTimeout);
             }
         }
-        public static void Execute(SqlConnection conn, string query, object parameters = null, CommandType commandType = CommandType.StoredProcedure, int commandTimeout = 30)
+        public static int Execute(SqlConnection conn, string query, object parameters = null, CommandType commandType = CommandType.StoredProcedure, int commandTimeout = 30)
         {
             var cmdBuilder = new SqlCommandBuilder().CreateCommand(query)
                                                     .SetConnection(conn)
@@ -24,16 +24,16 @@ namespace Cinch.DbConnect
                                                     .WithParameters(parameters)
                                                     .SetCommandType(commandType);
 
-            conn.Execute(cmdBuilder);
+            return conn.Execute(cmdBuilder);
         }        
-        public static async Task ExecuteAsync(string connStr, string query, object parameters = null, CommandType commandType = CommandType.StoredProcedure, int commandTimeout = 30)
+        public static async Task<int> ExecuteAsync(string connStr, string query, object parameters = null, CommandType commandType = CommandType.StoredProcedure, int commandTimeout = 30)
         {
             using (var conn = new SqlConnection(connStr))
             {                
-                await ExecuteAsync(conn, query, parameters, commandType, commandTimeout);
+                return await ExecuteAsync(conn, query, parameters, commandType, commandTimeout);
             }
         }
-        public static async Task ExecuteAsync(SqlConnection conn, string query, object parameters = null, CommandType commandType = CommandType.StoredProcedure, int commandTimeout = 30)
+        public static async Task<int> ExecuteAsync(SqlConnection conn, string query, object parameters = null, CommandType commandType = CommandType.StoredProcedure, int commandTimeout = 30)
         {
             var cmdBuilder = new SqlCommandBuilder().CreateCommand(query)
                                                     .SetConnection(conn)
@@ -41,7 +41,7 @@ namespace Cinch.DbConnect
                                                     .WithParameters(parameters)
                                                     .SetCommandType(commandType);
 
-            await conn.ExecuteAsync(cmdBuilder);
+            return await conn.ExecuteAsync(cmdBuilder);
         }
 
         public static T Execute<T>(string connStr, string query, object parameters = null, CommandType commandType = CommandType.StoredProcedure, int commandTimeout = 30)
